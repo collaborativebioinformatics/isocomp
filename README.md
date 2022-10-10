@@ -31,9 +31,12 @@ And what about gene fusions? We detect these in the stupidest possible way with 
 
 ## Goals
 
+Given high-quality assembled isoforms from 2-3 samples, we want to algorithmically (definitively) characterize the "unique" (i.e. differing) isoforms between samples.
 
 
 ## Description
+
+
 
 
 ## Flowchart
