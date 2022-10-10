@@ -1,15 +1,15 @@
-# RNAxSV : RNAseq isoforms and pathways bounded by evolutionarily conserved SVs
+# Isocomp: comparing high-quality IsoSeq3 isoforms between samples
 
 ![](images/logo.png)
 
 ## Contributors
-1. Evan	Biederstedt `(Leader, Liaison and Writer)`
-2. Yutong	Qiu `(Sysadmin and code developer)`
-3. Chia Sin	Liew `(Writer and analyst)`
-4. Chase	Mateusiak `(Sysadmin and code developer)`
-5. Rupesh	Kesharwani `(Sysadmin and analyst)`
-6. Bida	Gu `(Sysadmin and code developer)`
-
+1. Yutong Qiu (Carnegie Mellon, )
+2. Chia Sin	Liew (University of Nebraska-Lincoln, )
+3. Chase Mateusiak (Washington University, )
+4. Rupesh Kesharwani (Baylor College of Medicine, )
+5. Bida	Gu (University of Southern California, )
+6. Muhammad Sohail Raza (Beijing Institute of Genomics, )
+6. Evan	Biederstedt (HMS, )
 
 ## Introduction
 Gene fusions or transcript fusions are combinations of two genes or transcripts that are created by chromosomal rearrangement and a variety of genomic structural variations (SV), including translocations, inversions, deletions, and tandem duplications (DUP). These chromosomal signatures are distinctive to various cancer types and precision oncology such as in BCR-ABL1.
