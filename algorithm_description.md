@@ -10,7 +10,9 @@ Take three input FASTAs (e.g. HG002, HG004, HG005)
 Calculate coverage in BAM file using a rolling window of N bp whereby N=100.
 The output of this coverage file should be a tab-delimited BED-like file for each region whereby the coverage is >0
 i.e.
+```
 START    END   COVERAGE
+```
 
 ### Step (2) 
 Download a "gene regions" BED file with [tss, end] coordinates for each gene
