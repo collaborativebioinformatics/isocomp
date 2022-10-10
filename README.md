@@ -23,11 +23,13 @@ The isoseq3 generated HQ (Full-length high quality i.e. accuracy of 99%) transcr
 
 Commands:
 
-uLTRA mapping
+`uLTRA mapping`
 Then the data was processed with uLTRA [ PMID: 34302453 ] (v0.0.4.1; commands: uLTRA align --prefix prefix --isoseq --t 4 --index index_dir/ GRCh38.v33p13.primary_assembly.fa HG002.polished.hq.fastq.gz results_dir/).
-deSALT mapping
+
+`deSALT mapping`
 Then the data was processed with deSALT [ PMID: 31842925 ] (v1.5.5; ; commands: deSALT aln -T -o HG002.sam -t 4 -x ccs HG002.polished.hq.fastq.gz).
-Minimap2 mapping
+
+`Minimap2 mapping`
 Then the data was processed with Minimap2 [ PMID: 29750242 ] (v2.24-r1122; commands: minimap2 -t 8 -ax splice:hq -uf --secondary=no -C5 -O6,24 -B4 GRCh38.v33p13.primary_assembly.fa HG002.polished.hq.fastq.gz)
 
 ## Flowchart
