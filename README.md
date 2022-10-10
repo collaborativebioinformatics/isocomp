@@ -1,5 +1,6 @@
 # RNAxSV : RNAseq isoforms and pathways bounded by evolutionarily conserved SVs
 
+![](images/logo.png)
 
 ## Contributors
 1. Evan	Biederstedt `(Leader, Liaison and Writer)`
@@ -30,7 +31,7 @@ Minimap2 mapping
 Then the data was processed with Minimap2 [ PMID: 29750242 ] (v2.24-r1122; commands: minimap2 -t 8 -ax splice:hq -uf --secondary=no -C5 -O6,24 -B4 GRCh38.v33p13.primary_assembly.fa HG002.polished.hq.fastq.gz)
 
 ## Flowchart
-
+![](images/workflow.png)
 
 ## Quick start
 
