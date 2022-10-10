@@ -34,6 +34,10 @@ Then the data was processed with Minimap2 [ PMID: 29750242 ] (v2.24-r1122; comma
 
 ## Flowchart
 ![](images/workflow.png)
+### To extract sets of unique isoforms
+![](images/workflow_part1.png)
+### To annotate the unique isoforms
+![](images/workflow_part2.png)
 
 ## Quick start
 
