@@ -7,9 +7,9 @@
 #' usage: ./create_tx_start_stop_bed.R -g GCF_009914755.1/genomic.gtf -t txdb.sqlite
 
 suppressMessages(library('optparse'))
-suppressMessages(library('RSQLite'))
 suppressMessages(library('GenomicFeatures'))
-suppressMessages(library('tidyverse'))
+suppressMessages(library('dplyr'))
+suppressMessages(library('readr'))
 suppressMessages(library('regioneR'))
 
 #'
