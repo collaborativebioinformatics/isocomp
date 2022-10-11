@@ -204,21 +204,21 @@ if __name__ == "__main__":
             raise
         pass
 
-    # # merge 100bp coverage into one file
-    # print("Merging 100bp coverage files...")
-    # command = "paste %s | cut -f 1,2,3,4,8,12 > " % " ".join(bp_cov_names) +int_dir+"HG_merged_100bp_coverage.bed" 
-    # print(command)
-    # os.system(command)
+    # merge 100bp coverage into one file
+    print("Merging 100bp coverage files...")
+    command = "paste %s | cut -f 1,2,3,4,8,12 > " % " ".join(bp_cov_names) +int_dir+"HG_merged_100bp_coverage.bed" 
+    print(command)
+    os.system(command)
 
-    # # filter out 100bp windows with < 0.05 sum average coverage
-    # print("Filtering out < 0.05 coverage bins...")
+    # filter out 100bp windows with < 0.05 sum average coverage
+    print("Filtering out < 0.05 coverage bins...")
 
-    # coverage_100bp_df = pd.read_csv(int_dir+"HG_merged_100bp_coverage.bed", 
-    #                                 sep="\t", header=None, 
-    #                                 names=["chr", "start", "end", "hg002", "hg004", "hg005"])
-    # coverage_100bp_df["sum_cov"] = coverage_100bp_df["hg002"] + coverage_100bp_df["hg004"] + coverage_100bp_df["hg005"]
-    # coverage_100bp_df = coverage_100bp_df[coverage_100bp_df["sum_cov"] > 0.05]
-    # coverage_100bp_df.to_csv(int_dir+"merged_100bp_coverage.nonzero.bed", sep="\t", header=None, index=False)
+    coverage_100bp_df = pd.read_csv(int_dir+"HG_merged_100bp_coverage.bed", 
+                                    sep="\t", header=None, 
+                                    names=["chr", "start", "end", "hg002", "hg004", "hg005"])
+    coverage_100bp_df["sum_cov"] = coverage_100bp_df["hg002"] + coverage_100bp_df["hg004"] + coverage_100bp_df["hg005"]
+    coverage_100bp_df = coverage_100bp_df[coverage_100bp_df["sum_cov"] > 0.05]
+    coverage_100bp_df.to_csv(int_dir+"merged_100bp_coverage.nonzero.bed", sep="\t", header=None, index=False)
 
 
     # obtain coverage within each gene region
