@@ -1,36 +1,43 @@
-# RNAxSV : RNAseq isoforms and pathways bounded by evolutionarily conserved SVs
+# Isocomp: comparing high-quality IsoSeq3 isoforms between samples
 
 ![](images/logo.png)
 
 ## Contributors
-1. Evan	Biederstedt `(Leader, Liaison and Writer)`
-2. Yutong	Qiu `(Sysadmin and code developer)`
-3. Chia Sin	Liew `(Writer and analyst)`
-4. Chase	Mateusiak `(Sysadmin and code developer)`
-5. Rupesh	Kesharwani `(Sysadmin and analyst)`
-6. Bida	Gu `(Sysadmin and code developer)`
-
+1. Yutong Qiu (Carnegie Mellon)
+2. Chia Sin	Liew (University of Nebraska-Lincoln)
+3. Chase Mateusiak (Washington University)
+4. Rupesh Kesharwani (Baylor College of Medicine)
+5. Bida	Gu (University of Southern California)
+6. Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation)
+6. Evan	Biederstedt (HMS)
 
 ## Introduction
-Gene fusions or transcript fusions are combinations of two genes or transcripts that are created by chromosomal rearrangement and a variety of genomic structural variations (SV), including translocations, inversions, deletions, and tandem duplications (DUP). These chromosomal signatures are distinctive to various cancer types and precision oncology such as in BCR-ABL1.
-These hybrid genes and/or transcripts can be pedicted using a variety of computational tools and fusion detection techniques. However, when we wish to compare annotation over multiple samples, the lack of comparison tools makes it more difficult.
+NGS targeted sequencing and WES have become routine for clinical diagnosis of Mendelian disease [CITATION]. Family sequencing (or "trio sequencing") involves sequencing a patient and parents (trio) or other relatives. This improves the diagnostic potential via the interpretation of germline mutations and enables detection of de novo mutations which underlie most Mendelian disorders. 
+
+Transcriptomic profiling has been gaining used over the past several decades. However, this endeavor has been hampered by short-read sequencing, especially for inferring alternative splicing, allelic imbalance, and isoform variation. 
+
+The promise of long-read sequencing has been to overcome the inherent uncertainties of short-reads. 
+
+Something something Isoseq3: https://www.pacb.com/products-and-services/applications/rna-sequencing/
+
+Provides high-quality, polished, assembled full isoforms. With this, we will be able to identify alternatively-spliced isoforms and detect gene fusions. 
+
+Since the advent of HiFi reads, the error rates have plummeted. 
+
+The goal of this project will be to extend the utility of long-read RNAseq for investigating Mendelian diseases between multiple samples. 
+
+And what about gene fusions? We detect these in the stupidest possible way with short-read sequencing, and we think they're cancer-specific. What about the germline?
+
 
 ## Goals
-The tool aims to compare mulitple annotation (gff and seq) of multiple samples. It provided information about chromosomal rearrnagements (fusions) of genes between the two or more annotations. 
+
+Given high-quality assembled isoforms from 2-3 samples, we want to algorithmically (definitively) characterize the "unique" (i.e. differing) isoforms between samples.
+
 
 ## Description
-The isoseq3 generated HQ (Full-length high quality i.e. accuracy of 99%) transcripts of HG002 (NA27730, NA24385 and NA26105) were mapped to GRCh38 using three different long read alignment tools (uLTRA, deSALT and Minimap2). Next, we performed cDNA_cupcake workflow to collapse the redundant isoforms from bam, followed by filtering the low counts isoforms by 10 and filter away 5' degraded isoforms that might not be biologically significant. And at last, generated corrected gff and fasta as final output which futher utilized as input for the our tool.
 
-Commands:
 
-`uLTRA mapping`
-Then the data was processed with uLTRA [ PMID: 34302453 ] (v0.0.4.1; commands: uLTRA align --prefix prefix --isoseq --t 4 --index index_dir/ GRCh38.v33p13.primary_assembly.fa HG002.polished.hq.fastq.gz results_dir/).
 
-`deSALT mapping`
-Then the data was processed with deSALT [ PMID: 31842925 ] (v1.5.5; ; commands: deSALT aln -T -o HG002.sam -t 4 -x ccs HG002.polished.hq.fastq.gz).
-
-`Minimap2 mapping`
-Then the data was processed with Minimap2 [ PMID: 29750242 ] (v2.24-r1122; commands: minimap2 -t 8 -ax splice:hq -uf --secondary=no -C5 -O6,24 -B4 GRCh38.v33p13.primary_assembly.fa HG002.polished.hq.fastq.gz)
 
 ## Flowchart
 ![](images/workflow.png)
@@ -44,9 +51,6 @@ Then the data was processed with Minimap2 [ PMID: 29750242 ] (v2.24-r1122; comma
 
 ## Computational Resources / Operation
 
-
-## References
-1. https://agat.readthedocs.io/en/latest/tools/agat_sp_compare_two_annotations.html
-2. https://ccb.jhu.edu/software/stringtie/gffcompare.shtml
-
+## Citations
+[1] https://www.pacb.com/products-and-services/applications/rna-sequencing/
 
