@@ -44,7 +44,14 @@ We extract the full isoform sequences for each of these QNAMEs.
 One idea:
 We can output this into a separate FASTA file for each window. We'll need to name the output FASTA with the unique name given in Step (3)
 
+However, I don't think this is necessary; we can do all of this in memory in python, I think. The sequences can be put into a python list. 
+
+https://stackoverflow.com/questions/1388818/how-can-i-compare-two-lists-in-python-and-return-matches
+
+
+
 ### Step (6)
+
 We now have sequences from three samples (HG002, HG004, HG005) for each window.
 
 We will try doing intersections of sets first, based on the number of combinations.
@@ -62,6 +69,22 @@ If the intersection between these sequences equals the two samples, there is not
 If there is something special, we have a unique isoform in that window. 
 
 
+We need to write out the results into a tab-delimited output file:
+
+Here are the columns
+
+```
+1. chromosome
+2. window_start
+3. window_end
+4. isoform_start
+5. isoform_end
+6. samples_shared
+7. isoform_qname
+8. trancript_name
+9. gene_name
+10. entire isoform sequence
+```
 
 
 
