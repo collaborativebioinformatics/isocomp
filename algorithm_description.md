@@ -71,21 +71,58 @@ If there is something special, we have a unique isoform in that window.
 
 We need to write out the results into a tab-delimited output file:
 
-Here are the columns
+Here are the columns:
 
+
+**1. CHR**
+
+The chromosome. This either includes a prefix 'chr' or not. 
+
+e.g. `chr1`, `3`, `X`, `chrX`
+
+
+**2. WINDOW_START**
+
+This is the coorindate of where our bin/window begins. 
+It is a 1-based index location on the chromosome.
+
+(I'm happy with the name `BIN_START` as well...)
+
+
+
+**3. WINDOW_END**
+
+This is the coorindate of where our bin/window begins. 
+It is a 1-based index location on the chromosome.
+
+(I'm happy with the name `BIN_END` as well...)
+
+
+**4. ISOFORM_START**
+
+Start of the alignment of the isoform (against T2T). We get this from the BAM.
+
+
+**5. ISOFORM_END**
+
+End of the alignment of the isoform (against T2T). We get this from the BAM.
+
+**6. ISOFORM_NAME**
+
+QNAME of the isoform from the alignments (which were originally given in the FASTA file)
+
+
+**7. TXNAME
+
+The transcript name associated with this isoform
+
+**8. GENE_NAME
+
+The common gene name (based on HGNC) for the gene. It would be best if these were gene names, not Ensembl IDs.
+
+**9. SEQUENCE
+
+The entire isoform sequence.
 ```
-1. chromosome
-2. window_start
-3. window_end
-4. isoform_start
-5. isoform_end
-6. samples_shared
-7. isoform_qname
-8. trancript_name
-9. gene_name
-10. entire isoform sequence
-```
-
-
 
 
