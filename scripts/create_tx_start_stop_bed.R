@@ -1,12 +1,16 @@
-#'
-#' Parse a gtf file into objects for easy feature extraction
-#' https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_009914755.1/
-#'
+#!/usr/bin/env Rscript
 
-library(RSQLite)
-library(GenomicFeatures)
-library(tidyverse)
-library(regioneR)
+#' Parse a gtf file into objects. Output a txdb sqlite database, a bed6+ file
+#' of all gene features, a bed6+ with only protein coding genes, and a bed3
+#' with overlapping features combined
+#' https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_009914755.1/
+#' usage: ./create_tx_start_stop_bed.R -g GCF_009914755.1/genomic.gtf -t txdb.sqlite
+
+suppressMessages(library('optparse'))
+suppressMessages(library('RSQLite'))
+suppressMessages(library('GenomicFeatures'))
+suppressMessages(library('tidyverse'))
+suppressMessages(library('regioneR'))
 
 #'
 #' create a txdb and granges set from a gtf file
@@ -27,14 +31,17 @@ construct_annote_resources = function(path_to_txdb, path_to_gtf, construct_txdb 
 
   # create the txdb if construct_txdb is TRUE
   if(construct_txdb){
+    message('constructing txdb...')
     t2t_txdb = makeTxDbFromGFF(path_to_gtf, format='gtf')
     saveDb(t2t_txdb, path_to_txdb)
   # else, load from file
   } else{
+    message('connecting to txdb...')
     t2t_txdb = loadDb(path_to_txdb)
   }
 
   # read in the gtf file as a GRanges obj
+  message('loading gtf as GRanges...')
   t2t_gff = rtracklayer::import(path_to_gtf)
 
   # return the txdb connection and the gff granges obj
@@ -45,154 +52,89 @@ construct_annote_resources = function(path_to_txdb, path_to_gtf, construct_txdb 
 
 }
 
-#'
-#' Create a table decribing the variety of transcript biotypes listed in the gtf
-#'
-#' @param gff_granges granges obj constructed from the gtf
-#'
-#' @importFrom tibble as_tibble
-#' @importFrom magrittr %>%
-#'
-#' @return a tibble with fields tx_biotype and count
-#'
-tx_by_biotype = function(gff_granges){
-  gff_granges[gff_granges$type == 'transcript']$transcript_biotype %>%
-    factor() %>%
-    summary() %>%
-    as_tibble(rownames='tx_biotype') %>%
-    dplyr::rename(count = value)
+parseArguments <- function() {
+  # parse and return cmd line input
+
+  option_list <- list(
+    make_option(c('-g', '--gtf'),
+                help='path to the gtf annotation set. Suggested source:  https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_009914755.1/'),
+    make_option(c('-t', '--txdb'),
+                 help='path to a bioconductor sqlite TxDb. If one DNE, it will be created. In that case, provide a writeable path.'))
+
+  args <- parse_args(OptionParser(option_list=option_list))
+  return(args)
 }
 
-#'
-#' extract tx ranges into a bed6 format table
-#'
-#' @param txdb a txdb connection
-#' @param gff_granges gtf/gff represented as a granges obj
-#' @param tx_biotype a biotype corresponding to the table produced by tx_by_biotype
-#'
-#' @importFrom AnnotationDbi select
-#' @importFrom tibble as_tibble
-#' @importFrom dplyr mutate select filter
-#'
-#' @return
-#'
-extract_tx_regions = function(txdb, gff_granges, tx_biotype){
+main = function(args){
 
-  # extract a set of tx names from the gff
-  selected_tx = gff_granges[gff_granges$type == 'transcript' &
-                              gff_granges$transcript_biotype == tx_biotype]$transcript_id %>%
-    unique()
+  date = format(Sys.Date(), format="%Y%m%d")
 
-  n_tx = as.character(length(selected_tx))
-  message(sprintf("There are %s unique tx selected by tx_biotype: %s",n_tx,tx_biotype))
+  if(!file.exists(args$gtf)){
+    stop(sprintf('GTF file: %s DNE!', args$gtf))
+  }
 
-  # extract the ranges as a bed file from the txdb
-  AnnotationDbi::select(txdb,
-                        keys = selected_tx,
-                        columns = c('TXCHROM', 'TXSTART', 'TXEND',
-                                    'TXNAME', 'TXSTRAND', 'GENEID'),
-                        keytype = 'TXNAME') %>%
+  if(!file.exists(args$txdb)){
+    message(sprintf('txdb: %s DNE. One will be constructed', args$txdb))
+    construct_txdb = TRUE
+  } else{
+    construct_txdb = FALSE
+  }
+
+  # parse the annotation resources
+  annote_resources =
+    construct_annote_resources(args$txdb, args$gtf, construct_txdb)
+
+  message('extracting all genes as bed6+')
+  all_gene_regions = genes(annote_resources$txdb) %>%
     as_tibble() %>%
-    # add score column to comply with bed6 format
+    left_join(
+      as_tibble(annote_resources$gff_granges) %>%
+        dplyr::select(gene_id, db_xref, gene, gene_biotype) %>%
+        distinct(gene_id, .keep_all = TRUE),
+      by = 'gene_id') %>%
+    # to comply with bed6 format
     mutate(score = 0) %>%
-    # select in order of bed6 format
-    dplyr::select(TXCHROM,TXSTART,TXEND,TXNAME,score,TXSTRAND,GENEID) %>%
-    # if there are any NA values, filter them. In the t2t annotations, there
-    # are three
-    filter(!is.na(TXSTART))
-}
+    select(seqnames,start,end,gene,score,strand,db_xref,gene_biotype) %>%
+    write_tsv(sprintf("all_gene_regions_%s.bed",date),
+              col_names = FALSE)
 
-#'
-#' given a table from extract_tx_regions, collapse overlapping regions
-#'
-#' @param tx_defns the table output by extract_tx_regions
-#' @param min_dist see regioneR::joinRegions. Any pair of regions closer than
-#' min.dist bases will be fused in a larger region.
-#'
-#' @importFrom dplyr rename
-#' @importFrom tibble as_tibble
-#' @importFrom regioneR toGranges joinRegions toDataFrame
-#'
-#' @return a dataframe with fields chr start stop of fused regions
-#'
-collapse_overlapping_regions = function(tx_defns,min_dist=1){
-  tx_regions = tx_defns %>%
-    dplyr::rename(chr=TXCHROM,start=TXSTART,end=TXEND) %>%
+  message('creating protein coding only bed6+...')
+  protein_coding_gene_regions = genes(annote_resources$txdb) %>%
+    as_tibble() %>%
+    left_join(
+      as_tibble(annote_resources$gff_granges) %>%
+        dplyr::select(gene_id, db_xref, gene, gene_biotype) %>%
+        distinct(gene_id, .keep_all = TRUE),
+      by = 'gene_id') %>%
+    # to comply with bed6 format
+    mutate(score = 0) %>%
+    select(seqnames,start,end,gene,score,strand,db_xref,gene_biotype) %>%
+    filter(gene_biotype == 'protein_coding') %>%
+    write_tsv(sprintf("protein_coding_regions_%s.bed",date),
+              col_names = FALSE)
+
+  message('creating union of overlap bed3 from protein coding only set...')
+  collapsed_protein_coding_gene_regions = protein_coding_gene_regions %>%
+    dplyr::rename(chr=seqnames) %>%
     as.data.frame() %>%
     regioneR::toGRanges() %>%
-    regioneR::joinRegions(min.dist = min_dist) %>%
+    regioneR::joinRegions(min.dist = 1) %>%
     regioneR::toDataframe() %>%
-    as_tibble()
+    as_tibble() %>%
+    write_tsv(sprintf("collapsed_protein_coding_%s.bed",date),
+              col_names = FALSE)
+
+  message("Done!")
 }
 
-# parse the annotation resources
-annote_resources =
-  construct_annote_resources("data/t2t_txdb.sqlite",
-                             "data/GCF_009914755.1/genomic.sorted.gtf")
+main(parseArguments()) # call main method
 
-# create a table describing the diversity and number of tx_biotype in gff
-tx_biotype_df = tx_by_biotype(annote_resources$gff_granges)
-
-# extract mRNA tx regions
-tx_regions =
-  extract_tx_regions(annote_resources$txdb, annote_resources$gff_granges, 'mRNA')
-
-# collapse regions
-collapsed_tx_regions = collapse_overlapping_regions(tx_regions)
-
-all_gene_regions = genes(annote_resources$txdb) %>%
-  as_tibble() %>%
-  left_join(
-    as_tibble(annote_resources$gff_granges) %>%
-      dplyr::select(,gene_id, db_xref, gene, gene_biotype) %>%
-      distinct(gene_id, .keep_all = TRUE),
-    by = 'gene_id') %>%
-  # to comply with bed6 format
-  mutate(score = 0) %>%
-  select(seqnames,start,end,gene,score,strand,db_xref,gene_biotype)
-
-protein_coding_gene_regions = genes(annote_resources$txdb) %>%
-  as_tibble() %>%
-  left_join(
-    as_tibble(annote_resources$gff_granges) %>%
-      dplyr::select(,gene_id, db_xref, gene, gene_biotype) %>%
-      distinct(gene_id, .keep_all = TRUE),
-    by = 'gene_id') %>%
-  # to comply with bed6 format
-  mutate(score = 0) %>%
-  select(seqnames,start,end,gene,score,strand,db_xref,gene_biotype) %>%
-  filter(gene_biotype == 'protein_coding')
-
-collapsed_protein_coding_gene_regions = gene_regions %>%
-  dplyr::rename(chr=seqnames) %>%
-  as.data.frame() %>%
-  regioneR::toGRanges() %>%
-  regioneR::joinRegions(min.dist = 1) %>%
-  regioneR::toDataframe() %>%
-  as_tibble()
-
-# write out
-
-write_tsv(all_gene_regions,
-          "data/t2t_all_gene_regions_20221010.bed",
-          col_names = FALSE)
-
-write_tsv(protein_coding_gene_regions,
-          "data/t2t_protein_coding_regions_20221010.bed",
-          col_names = FALSE)
-
-write_tsv(collapsed_protein_coding_gene_regions,
-          "data/t2t_collapsed_protein_coding_20221010.bed",
-          col_names = FALSE)
-
-# write_tsv(tx_regions,
-#           "data/mrna_tx_start_stop_t2t_20221010.bed",
-#           col_names = FALSE)
+# for testing
+# input_list = list()
+# input_list['gtf'] = 'data/GCF_009914755.1/genomic.sorted.gtf'
+# input_list['txdb'] = 'data/t2t_txdb.sqlite'
 #
-# write_tsv(collapsed_tx_regions,
-#           "data/tx_mrna_nonoverlapping_20221010.bed",
-#           col_names = FALSE)
-
+# main(input_list)
 
 
 
