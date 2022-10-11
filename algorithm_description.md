@@ -24,8 +24,22 @@ Calculate Bedtools intersect between these two BED files. Output the intersect B
 ### Step (4)
 For each [tss, end] window, calculate the bins starts/ends  (as @Yutong Qiu describes)
 
+**NOTE:** we need to output this file for users. (Why? Because (A) it's useful for computational biologists to see where the original windows where. (B) we don't want to give summaries for windows with no unique isoforms; by default, all isoforms between these samples are shared and the sequences are the exact same.)
+
+The output file should be a simple BED file:
+
+````
+window_name window_start window_end
+````
+
 ### Step (5)
-For each window, extract the "reads" i.e. the isoforms which aligned in that window. We can output this into a separate FASTA file for each window. We'll need to name the output FASTA with the unique name given in Step (3)
+For each window (i.e. using the start and end coordinate for each window), extract the "reads" i.e. the isoforms which aligned in that window. 
+
+How? We first must extract the QNAMEs for any isoform sequence which aligned in that window. 
+
+
+
+We can output this into a separate FASTA file for each window. We'll need to name the output FASTA with the unique name given in Step (3)
 
 ### Step (6)
 We now have sequences from three samples (HG002, HG004, HG005) for each window.
