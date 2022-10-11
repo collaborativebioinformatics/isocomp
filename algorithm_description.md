@@ -37,8 +37,11 @@ For each window (i.e. using the start and end coordinate for each window), extra
 
 How? We first must extract the QNAMEs for any isoform sequence which aligned in that window. 
 
+Based on these QNAMEs, we can categorize these into the different samples, i.e. QNAMEs for sample1, QNAMEs for sample2, QNAMEs for sample3. 
 
+We extract the full isoform sequences for each of these QNAMEs. 
 
+One idea:
 We can output this into a separate FASTA file for each window. We'll need to name the output FASTA with the unique name given in Step (3)
 
 ### Step (6)
@@ -47,11 +50,19 @@ We now have sequences from three samples (HG002, HG004, HG005) for each window.
 We will try doing intersections of sets first, based on the number of combinations.
 e.g. "sample1 vs sample2", "sample2 vs sample 3", "sample1 vs sample3"
 
-Ideas how to do this in python here
+i.e. 
+```
+S1 + S2
+S2 + S3
+S1 + S3
+```
 
-If there are intersections, we now have candidate unique isoforms on a sample basis.
+If the intersection between these sequences equals the two samples, there is nothing "unique" between these pairs. 
 
-Next steps:
-Pairwise alignment -> variants.
+If there is something special, we have a unique isoform in that window. 
+
+
+
+
 
 
