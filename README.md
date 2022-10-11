@@ -3,13 +3,13 @@
 ![](images/logo.png)
 
 ## Contributors
-1. Yutong Qiu (Carnegie Mellon, )
-2. Chia Sin	Liew (University of Nebraska-Lincoln, )
-3. Chase Mateusiak (Washington University, )
-4. Rupesh Kesharwani (Baylor College of Medicine, )
-5. Bida	Gu (University of Southern California, )
-6. Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation; sohail@big.ac.cn )
-6. Evan	Biederstedt (HMS, )
+1. Yutong Qiu (Carnegie Mellon)
+2. Chia Sin	Liew (University of Nebraska-Lincoln)
+3. Chase Mateusiak (Washington University)
+4. Rupesh Kesharwani (Baylor College of Medicine)
+5. Bida	Gu (University of Southern California)
+6. Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation)
+6. Evan	Biederstedt (HMS)
 
 ## Introduction
 NGS targeted sequencing and WES have become routine for clinical diagnosis of Mendelian disease [CITATION]. Family sequencing (or "trio sequencing") involves sequencing a patient and parents (trio) or other relatives. This improves the diagnostic potential via the interpretation of germline mutations and enables detection of de novo mutations which underlie most Mendelian disorders. 
