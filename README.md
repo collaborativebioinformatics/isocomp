@@ -8,7 +8,7 @@
 3. Chase Mateusiak (Washington University, )
 4. Rupesh Kesharwani (Baylor College of Medicine, )
 5. Bida	Gu (University of Southern California, )
-6. Muhammad Sohail Raza (Beijing Institute of Genomics, )
+6. Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation; sohail@big.ac.cn )
 6. Evan	Biederstedt (HMS, )
 
 ## Introduction
