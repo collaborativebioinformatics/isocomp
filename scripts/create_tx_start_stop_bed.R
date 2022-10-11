@@ -140,7 +140,7 @@ tx_regions =
 # collapse regions
 collapsed_tx_regions = collapse_overlapping_regions(tx_regions)
 
-gene_regions = genes(annote_resources$txdb) %>%
+all_gene_regions = genes(annote_resources$txdb) %>%
   as_tibble() %>%
   left_join(
     as_tibble(annote_resources$gff_granges) %>%
@@ -151,10 +151,38 @@ gene_regions = genes(annote_resources$txdb) %>%
   mutate(score = 0) %>%
   select(seqnames,start,end,gene,score,strand,db_xref,gene_biotype)
 
+protein_coding_gene_regions = genes(annote_resources$txdb) %>%
+  as_tibble() %>%
+  left_join(
+    as_tibble(annote_resources$gff_granges) %>%
+      dplyr::select(,gene_id, db_xref, gene, gene_biotype) %>%
+      distinct(gene_id, .keep_all = TRUE),
+    by = 'gene_id') %>%
+  # to comply with bed6 format
+  mutate(score = 0) %>%
+  select(seqnames,start,end,gene,score,strand,db_xref,gene_biotype) %>%
+  filter(gene_biotype == 'protein_coding')
+
+collapsed_protein_coding_gene_regions = gene_regions %>%
+  dplyr::rename(chr=seqnames) %>%
+  as.data.frame() %>%
+  regioneR::toGRanges() %>%
+  regioneR::joinRegions(min.dist = 1) %>%
+  regioneR::toDataframe() %>%
+  as_tibble()
+
 # write out
 
-write_tsv(gene_regions,
+write_tsv(all_gene_regions,
           "data/t2t_all_gene_regions_20221010.bed",
+          col_names = FALSE)
+
+write_tsv(protein_coding_gene_regions,
+          "data/t2t_protein_coding_regions_20221010.bed",
+          col_names = FALSE)
+
+write_tsv(collapsed_protein_coding_gene_regions,
+          "data/t2t_collapsed_protein_coding_20221010.bed",
           col_names = FALSE)
 
 # write_tsv(tx_regions,
