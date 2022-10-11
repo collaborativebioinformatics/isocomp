@@ -8,7 +8,8 @@
 3. Chia Sin	Liew `(Writer and analyst)`
 4. Chase	Mateusiak `(Sysadmin and code developer)`
 5. Rupesh	Kesharwani `(Sysadmin and analyst)`
-6. Bida	Gu `(Sysadmin and code developer)`
+6. Bida	Gu `(Sysadmin and code developer)
+7. Muhammad Sohail Raza `(Writer and analyst)``
 
 
 ## Introduction
