@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def rename_fa_desc(input_fa: str, output_fa: str, i: int = 1):
+def rename_fa_desc(input_fa: str, output_fa: str, sample: str, i: int = 1):
     # rename FASTA description to: ">SampleName_i_existingFastaSeqID"
     # whereby i is the increment, and print the renamed FASTA entries
     with open(input_fa, "r") as f, open(output_fa, "w") as r:
@@ -21,4 +21,4 @@ samples = ["HG002", "HG004", "HG005"]
 for sample in samples:
     input_fa = sample + "_corrected.fasta"
     output_fa = sample + "_corrected.renamed.fasta"
-    rename_fa_desc(input_fa, output_fa)
+    rename_fa_desc(input_fa, output_fa, sample)
