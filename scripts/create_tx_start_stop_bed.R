@@ -1,5 +1,6 @@
 #'
 #' Parse a gtf file into objects for easy feature extraction
+#' https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_009914755.1/
 #'
 
 library(RSQLite)
@@ -139,14 +140,30 @@ tx_regions =
 # collapse regions
 collapsed_tx_regions = collapse_overlapping_regions(tx_regions)
 
+gene_regions = genes(annote_resources$txdb) %>%
+  as_tibble() %>%
+  left_join(
+    as_tibble(annote_resources$gff_granges) %>%
+      dplyr::select(,gene_id, db_xref, gene, gene_biotype) %>%
+      distinct(gene_id, .keep_all = TRUE),
+    by = 'gene_id') %>%
+  # to comply with bed6 format
+  mutate(score = 0) %>%
+  select(seqnames,start,end,gene,score,strand,db_xref,gene_biotype)
+
 # write out
-write_tsv(tx_regions,
-          "data/mrna_tx_start_stop_t2t_20221010.bed",
+
+write_tsv(gene_regions,
+          "data/t2t_all_gene_regions_20221010.bed",
           col_names = FALSE)
 
-write_tsv(collapsed_tx_regions,
-          "data/tx_mrna_nonoverlapping_20221010.bed",
-          col_names = FALSE)
+# write_tsv(tx_regions,
+#           "data/mrna_tx_start_stop_t2t_20221010.bed",
+#           col_names = FALSE)
+#
+# write_tsv(collapsed_tx_regions,
+#           "data/tx_mrna_nonoverlapping_20221010.bed",
+#           col_names = FALSE)
 
 
 
