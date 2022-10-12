@@ -69,23 +69,6 @@ If the intersection between these sequences equals the two samples, there is not
 If there is something special, we have a unique isoform in that window. 
 
 
-We need to write out the results into a tab-delimited output file:
-
-Here are the columns
-
-```
-1. chromosome
-2. window_start
-3. window_end
-4. isoform_start
-5. isoform_end
-6. samples_shared
-7. isoform_qname
-8. trancript_name
-9. gene_name
-10. entire isoform sequence
-```
-
-
+We need to write out the results into a tab-delimited output file. See the specs in another markdown. 
 
 
