@@ -32,7 +32,7 @@ for key, value in argsDict.items():
 sys.stdout.write('\n'); sys.stdout.flush()
 
 #--------------------------------------------------------
-# global variables and user-defined functions
+# functions
 #--------------------------------------------------------
 # function to config input bed file
 def bedConfigFunc(inBed):
@@ -53,7 +53,7 @@ def bedConfigFunc(inBed):
 #--------------------------------------------------------
 if __name__ == "__main__":
 
-    #### coverage statistics over target regions
+    # coverage statistics over target regions
 
     bedDict = bedConfigFunc(inBed)
 
@@ -74,7 +74,7 @@ if __name__ == "__main__":
                 for line in f:
                     depthDict[ int(line.strip().split('\t')[1]) ] = int(line.strip().split('\t')[2])
 
-            #### statistics
+            # statistics
             for head in range(int(start),int(end),100):
                 tail = head + 99
                 if tail > int(end): tail = int(end)

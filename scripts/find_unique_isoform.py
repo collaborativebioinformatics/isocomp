@@ -1,12 +1,19 @@
 # -*- coding: UTF-8 -*-
-import os, sys, argparse, re, datetime, pysam
+import os
+import sys
+import argparse
+import datetime
+import pysam
+import edlib
+import numpy
 from Bio import SeqIO
+
 #--------------------------------------------------------
 # parser
 #--------------------------------------------------------
 # positional/optional arguments
-posList = ['inFiles', 'inBed', 'outFile']
-optList = ['mapQCut']
+posList = ['manifest', 'inBed', 'outFile']
+optList = ['minPercent']
 sys.stdout.write('\n'); sys.stdout.flush()
 # author and version info
 usage = sys.argv[0] + ' <options> ' + ' '.join(posList) + '\n'
@@ -16,11 +23,11 @@ description = '\nDescription: The program finds unique isoforms by samples and g
 
 parser = argparse.ArgumentParser(usage = '\n'.join([usage, author, version, description]), formatter_class=argparse.RawTextHelpFormatter)
 # positional arguments
-parser.add_argument(posList[0], type=str, help='string\tinput manifest files.  e.g. /in/samples.csv')
+parser.add_argument(posList[0], type=str, help='string\tinput manifest csv file in format: sample,bam,fa.  e.g. /in/manifest.csv')
 parser.add_argument(posList[1], type=str, help='string\tinput bed file.  e.g. /in/window.bed')
 parser.add_argument(posList[2], type=str, help='string\toutput file.  e.g. /out/file.tsv')
 # optional arguments
-parser.add_argument('-q', '--'+optList[0], type=int, metavar='', default=20, help='integer\tminimum mapQ for reads, default 20')
+parser.add_argument('-q', '--'+optList[0], type=float, metavar='', default=95, help='float\tminimum percentile for edit distance output (descending order, value must be between 0 and 100 inclusive), default 95')
 
 # strict positional/optional arguments checking
 argsDict = vars(parser.parse_args())
@@ -31,71 +38,153 @@ for key, value in argsDict.items():
     vars()[key] = value # assign values of arguments into shorthand global variables
 sys.stdout.write('\n'); sys.stdout.flush()
 
+
 #--------------------------------------------------------
-# global variables and user-defined functions
+# functions
 #--------------------------------------------------------
-# function to config input bed file
-def bedConfigFunc(inBed):
 
-    bedDict = {}
-    with open(inBed) as f:
+# function to config input bed & bam & fa files
+def readSeqsFunc(inBed, manifest):
 
-        for line in f:
-            chr,start,end = line.strip().split()[:3]
-            if chr in bedDict: bedDict[chr].append([start,end])
-            if not chr in bedDict: bedDict[chr] = [[start,end]]
+    '''
+    read all input information.
 
-    return(bedDict)
+    @parameter inBed - input bed file in "chr start end ..." format.
+    @parameter manifest - input manifest file in "sample_id,path_to_bam,path_to_fasta" format.
 
-
-def readSeqsFunc(inFiles, bedDict):
-
-    with open(inFiles) as f: fields = [ l.strip().split(',') for l in f ]
+    '''
 
     outDict = {}
-    for chr,beds in bedDict.items():
-        for start,end in beds:
-            outDict[(chr,start,end)] = {}
+    '''
+    {
+    locus1: {
+        sample1: {
+            qname1: {
+                seq:
+                start:
+                length:
+            }
+            qname2: {...}
+        }
+        sample2: {...}
+    locus2: {...}
+    ...
+    }
+    '''
 
+    # read windows
+    with open(inBed) as f:
+        for l in f: outDict[tuple(l.strip().split()[:3])] = {}
+
+    # read manifest
+    with open(manifest) as f: fields = [ l.strip().split(',') for l in f ]
+
+    # read sequences
     for sample,bam,fa in fields:
+
+        # read fa & bam
         seqDict = {s.id : str(s.seq) for s in SeqIO.parse(fa, 'fasta')}
         samfile = pysam.AlignmentFile(bam, 'rb')
 
-        for chr,beds in bedDict.items():
-            for start,end in beds:
-                outDict[(chr,start,end)][sample] = {}
-                for read in samfile.fetch(chr, int(start), int(end)):
-                    qname = read.query_name.split('_')[2]
-                    outDict[(chr,start,end)][sample][qname] = {}
-                    outDict[(chr,start,end)][sample][qname]['seq'] = seqDict[qname]
-                    outDict[(chr,start,end)][sample][qname]['start'] = read.reference_start
-                    outDict[(chr,start,end)][sample][qname]['query_length'] = read.query_length
-                #outDict[(chr,start,end)][sample]['seqs'] = set([ seqDict[read.query_name.split('_')[2]] for read in samfile.fetch(chr, int(start), int(end)) ])
+        # config sequences
+        for locus in outDict.keys():
 
-                #outDict[(chr,start,end)][sample].append(seqDict[name])
-            #out.write( '>%s_%s:%s-%s\n%s\n' %(name, chr, start, end, seqDict[name]) )
+            outDict[locus][sample] = {}
+
+            for read in samfile.fetch(locus[0], int(locus[1]), int(locus[2])):
+                qname = read.query_name.split('_')[2]
+                outDict[locus][sample][qname] = {}
+                outDict[locus][sample][qname]['seq'] = seqDict[qname]
+                outDict[locus][sample][qname]['start'] = read.reference_start
+                outDict[locus][sample][qname]['query_length'] = read.query_length
+
         samfile.close()
 
     return outDict
 
 
-def compareFunc(seqDict, outFile):
-    
+# function for unique isoform search and N-W ed stats
+def compareFunc(seqDict, outFile, minPercent):
+
+    '''
+    find unique isoforms and corresponding N-W alignment stats.
+
+    @parameter seqDict - configed sequences from readSeqsFunc().
+    @parameter outFile - output file for results.
+    @parameter minPercent - minimum percentile for edit distance output (descending order).
+
+    '''
+
     out = open(outFile, 'w')
+    out.write('\t'.join(['win_chr', \
+                         'win_start', \
+                         'win_end', \
+                         'total_isoform', \
+                         'isoform_name', \
+                         'sample_from', \
+                         'sample_compared_to', \
+                         'mapped_start', \
+                         'isoform_sequence', \
+                         'selected_alignments']) +'\n')
 
-    for locus,allSeqs in seqDict.items():
-        for sample,sampleDict in allSeqs.items():
-            unique = set([ sampleDict[qname]['seq'] for qname in sampleDict.keys() ])
-            #others = []
-            #for s in allSeqs.keys():
-            #    if s != sample: others += [ [allSeqs[s][q] for q in allSeqs[s].keys()] for s in allSeqs.keys() if s != sample]
-            others = [ [allSeqs[s][q]['seq'] for q in allSeqs[s].keys()] for s in allSeqs.keys() if s != sample]
+    for locus,allSamples in seqDict.items():
 
-            for other in others: unique = unique.difference(set(other))
+        # all isoforms of the locus
+        '''allSeqs, allNames = [], []
+        for s,d in allSamples.items():
+            allSeqs += [ d[q]['seq'] for q in d.keys() ]
+            allNames += [ s+'_'+q for q in d.keys() ]
+        total = len(allSeqs)
+        '''
+        total = sum([ len([ allSamples[sample][qname]['seq'] for qname in allSamples[sample].keys() ]) for sample in allSamples.keys() ])
 
-            for u in unique:
-                for qname,v in sampleDict.items():
-                    if v['seq'] == u: out.write('\t'.join(map(str, list(locus) + [qname, u, sample, v['start'],v['query_length']])) +'\n')
+        lookup = {}
+
+        for sample,sampleDict in allSamples.items():
+
+            # isoforms in this sample
+            this = [ sampleDict[q]['seq'] for q in sampleDict.keys() ]
+
+            #lookup = {}
+
+            for anotherSample in allSamples.keys():
+
+                if anotherSample == sample: continue
+
+                # isoforms in another sample
+                another = [ allSamples[anotherSample][q]['seq'] for q in allSamples[anotherSample].keys() ]
+                # intersect to obtain unique isoforms in this sample
+                unique = set(this).difference(set(another))
+
+                # N-W alignment stats
+                for u in unique:
+
+                    # all condidate sequences for N-W alignment
+                    allSeqs, allNames = [], []
+                    for s,d in allSamples.items():
+                        allSeqs += [ d[q]['seq'] for q in d.keys() if d[q]['seq'] != u]
+                        allNames += [ s+'_'+q for q in d.keys() if d[q]['seq'] != u ]
+
+                    # N-W alignment and save for quick lookup
+                    for a in allSeqs:
+                        if (u,a) not in lookup: lookup[(u,a)] = edlib.align(u, a, mode = 'NW', task = 'path')
+
+                    # alignment stats
+                    alns = [ lookup[(u,a)] for a in allSeqs ]
+                    eds = [ round(aln['editDistance']/len(u),2) for aln in alns ]
+                    cigars = [ aln['cigar'] for aln in alns ]
+
+                    # select alignments by percentile edit distance
+                    if alns:
+                        cut = numpy.percentile(eds, 100 - minPercent)
+                        picks = [ str(ed)+'_'+allNames[i]+'_'+cigars[i] for i,ed in enumerate(eds) if ed <= cut ]
+                    else:
+                        picks = []
+
+                    # output
+                    for qname,v in sampleDict.items():
+                        temp = [total, qname, sample, anotherSample, v['start'], u, ','.join(picks)]
+                        if v['seq'] == u: out.write('\t'.join( map(str, list(locus)+temp) ) +'\n')
 
     out.close()
 
@@ -105,9 +194,8 @@ def compareFunc(seqDict, outFile):
 #--------------------------------------------------------
 if __name__ == "__main__":
 
-    bedDict = bedConfigFunc(inBed)
-    seqDict = readSeqsFunc(inFiles, bedDict)
-    compareFunc(seqDict, outFile)
+    seqDict = readSeqsFunc(inBed, manifest)
+    compareFunc(seqDict, outFile, minPercent)
 
 sys.stdout.write('\n' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' - ' + sys.argv[0] + ' - End of Program\n'); sys.stdout.flush()
 
