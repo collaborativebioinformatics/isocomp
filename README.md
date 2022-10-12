@@ -46,12 +46,14 @@ Given high-quality assembled isoforms from 2-3 samples, we want to algorithmical
 
 
 
-## Workflow Overview
-![](images/workflow_overview_10122022.png)
+
 
 ### Isocomp Workflow
 ![](images/isocomp_workflow_10122022.png)
 
+
+Isocomp can be used as part of the PacBio IsoSeq-Sqanti workflow, using high quality, assembled isoforms produced by Sqanti:
+![](images/workflow_overview_10122022.png)
 
 ## Quick start
 
