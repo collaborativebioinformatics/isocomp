@@ -12,6 +12,14 @@
 6. Evan	Biederstedt (HMS)
 
 ## Introduction
+Isocomp extract high-quality, complete isoforms from multiple samples and perform an all-against-all sequence alignment among similar isoforms. From the alignment, we identify isoforms that are unique to each sample and annotate the differences between these unique isoforms and similar isoforms from other samples. 
+
+**What problem are we trying to solve?**
+
+Given two samples, identify isoforms that are unique to each sample. We define that two isoforms are different if their underlying sequences do not match.
+
+**Background:**
+
 NGS targeted sequencing and WES have become routine for clinical diagnosis of Mendelian disease [CITATION]. Family sequencing (or "trio sequencing") involves sequencing a patient and parents (trio) or other relatives. This improves the diagnostic potential via the interpretation of germline mutations and enables detection of de novo mutations which underlie most Mendelian disorders. 
 
 Transcriptomic profiling has been gaining used over the past several decades. However, this endeavor has been hampered by short-read sequencing, especially for inferring alternative splicing, allelic imbalance, and isoform variation. 
@@ -38,13 +46,12 @@ Given high-quality assembled isoforms from 2-3 samples, we want to algorithmical
 
 
 
+## Workflow Overview
+![](images/workflow_overview_10122022.png)
 
-## Flowchart
-![](images/workflow.png)
-### To extract sets of unique isoforms
-![](images/workflow_part1.png)
-### To annotate the unique isoforms
-![](images/workflow_part2.png)
+### Isocomp Workflow
+![](images/isocomp_workflow_10122022.png)
+
 
 ## Quick start
 
