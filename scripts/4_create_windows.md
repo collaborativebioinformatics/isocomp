@@ -1,3 +1,6 @@
+Author: Yutong Qiu
+Date: Oct 11, 2022
+
 ## Create windows to prepare for sequence extraction from binning
 
 ```
