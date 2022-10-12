@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
 '''
 Author: Yutong Qiu
-Date; Oct 11, 2022
+Date: Oct 11, 2022
 
 Requires: 
 - 100bp windows with coverage for each sample
