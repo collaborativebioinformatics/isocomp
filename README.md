@@ -49,6 +49,117 @@ Given high-quality assembled isoforms from 2-3 samples, we want to algorithmical
 
 ## Quick start
 
+### Deployment
+
+Eventually, `pip install isocomp`.  But not yet.
+
+### Development
+
+Install [poetry](https://python-poetry.org/) and consider setting [the configuration 
+such that virtual environments for a given projects are installed in that project 
+directory](https://python-poetry.org/docs/configuration/#local-configuration).  
+
+Next, I like working on a fork rather than the actual repository of record. I set my 
+[git remotes](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes) so that `origin` points to 
+my fork, and `upstream` points to the 'upstream' repository.
+
+```bash
+➜  isocomp git:(develop) ✗ git remote -v 
+origin  https://github.com/cmatKhan/isocomp.git (fetch)
+origin  https://github.com/cmatKhan/isocomp.git (push)
+upstream        https://github.com/collaborativebioinformatics/isocomp.git (fetch)
+upstream        https://github.com/collaborativebioinformatics/isocomp.git (push)
+```
+
+On your machine, `cd` into your local repository, `git checkout` the development 
+branch, and make sure it is up-to-date with the upstream (ie the original) repository. 
+
+__NOTE__: if you branch, in general make sure you branch off the `develop` repo, not `main`!  
+
+Then (assuming poetry is installed already), do:
+
+```bash
+$ poetry install
+```
+
+This will install the virtual environment with the dependencies (and the dependencies' dependencies) 
+listed in the [pyproject.toml](./pyproject.toml).
+### <u>Adding dependencies</u>
+
+To add a development dependency (eg, `mkdocs` is not something a user needs), 
+use `poetry add -D <dependency>` this is equivalent to `pip install`ing into your 
+virtual environment with the added benefit that the dependency is tracked in the 
+[pyproject.toml](./pyproject.toml).  
+
+To add a deployment dependency, just omit the `-D` flag.  
+
+### <u>Writing code</u>
+
+Do this first!
+
+```bash
+$ pip install -e .
+```
+
+[This is an 'editable install'](https://stackoverflow.com/questions/35064426/when-would-the-e-editable-option-be-useful-with-pip-install) 
+and means that any change you make in your code is immediately available in your environment. 
+__NOTE__: If you happen to see a [Logging Error](https://github.com/pypa/pip/issues/11309) when you run the `pip install -e .` 
+command, you can ignore it.  
+
+If you use vscode, [this is a useful 
+plugin](https://marketplace.visualstudio.com/items?itemName=jshaptic.autodocs-vscode-support) 
+which will automatically generate docstrings for you. [Default docstring format is google](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html), 
+which is what the scripts we currently have use. This is an example of what a google formatted 
+docstring looks like:
+
+```python
+def get_all_windows(gene_df:pd.DataFrame, bp_df:pd.DataFrame) -> pd.DataFrame:
+    """From gene boundaries and 100 bp nonzero coverage windows, produce a merged window df
+
+    Args:
+        gene_df (pd.DataFrame): one window per gene, > 0.05 avg coverage
+        bp_df (pd.DataFrame): one window per 100 bp, > 0.05 avg coverage
+
+    Returns:
+        pd.DataFrame: merged windows df
+    """
+    ...
+```
+
+In the function definition, the [type hints](https://docs.python.org/3/library/typing.html) of the arguments (eg `gene_df:pdDataFrame`)
+are *not* required, but if you include them, autoDocs will automatically 
+generate the data types in the docstring skeleton, also, which is nice. The `-> <datatype>` 
+at the end of the function definition is the return data type.
+
+### <u>Tests</u>
+
+Unit tests can be written into the [src/tests](./src/tests) directory. There is 
+an example in [src/tests/test_isocomp.py](./src/tests/test_isocomp.py). There are a couple other 
+examples of tests -- ie for logging and error handling -- 
+[here, too](https://github.com/cmatKhan/lmdemo/blob/main/tests/test_lmdemo.py).
+
+### <u>Build</u>
+
+It's good to intermittently build the package as you go. To do so, use `poetry build` 
+which will create a `.whl` and `.tar.gz` (`dist` is already included 
+in the [gitignore](./.gitignore)). You can 'distribute' these files to others -- they 
+can be installed with `pip` or `conda` -- or use them to install the software outside of 
+your current virtual environment.
+
+### <u>Documentation</u>
+
+If you would like to write documentation (ie not docstrings, but long form letters 
+to your adoring users), then this can be done in markdown 
+[__or jupyter notebooks__](https://pypi.org/project/mkdocs-jupyter/) (already added as a dev dependency) in the 
+[docs](./docs) directory. Add the markdown/notebook document to the `nav` section in 
+the [mkdocs.yml](./mkdocs.yml) and it will be added to the menu of the documentation 
+site. Use `mkdocs serve` locally to see what the documentation looks like. 
+`mkdocs build` will build the site in a directory called `site`, which is in the .gitignore already. 
+Like `poetry build` it is a good diea to do `mkdocs build` intermittently as you write documentation. 
+Eventually, we'll use `mkdocs gh-deploy` to deploy the site to github pages. Maybe if we get fancy, we'll 
+set up the github actions to build the package on mac,windows and linux OSes on every push to develop, and rebuild 
+the docs and push the package to pypi on every push to `main`.
+
 
 ## Computational Resources / Operation
 
