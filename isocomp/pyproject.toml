@@ -6,9 +6,11 @@ authors = ["chase mateusiak <chase.mateusiak@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pyranges = "^0.0.117"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+mkdocs = "^1.4.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
