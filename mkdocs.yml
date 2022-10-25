@@ -1,0 +1,35 @@
+site_name: "Isocomp"
+site_description: "Extend the utility of long-read RNAseq for investigating Mendelian diseases between multiple samples."
+site_author: "Yutong Qiu, Chia Sin Liew, Rupesh Kesharwani, Bida Gu, Chase Mateusiak, Muhammad Sohail Raza, Evan Biederstedt"
+site_url: "https://github.com/collaborativebioinformatics/isocomp"
+repo_url: "https://github.com/collaborativebioinformatics/isocomp"
+repo_name: "isocomp"
+edit_uri: "edit/master/docs/"
+watch: ['src/isocomp']
+
+theme:
+  name: readthedocs
+
+plugins:
+- search
+- autorefs
+- section-index
+- mkdocstrings:
+    handlers:
+          python:
+            paths: [src/isocomp]  # search packages in the src folder
+            docstring_style: 'google'
+            merge_init_into_class: True
+
+nav:
+- "Algorithm Description": "algorithm_description.md"
+- "Create Windows": "4_create_windows.md"
+- Scripts: "scripts.md"
+- Tutorials: "tutorials.md"
+- "Unique Isoform File Specs": unique_isoform_file_spec.md
+
+markdown_extensions:
+    - smarty
+    - toc:
+        permalink: True
+    - sane_lists
