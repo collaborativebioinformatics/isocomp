@@ -8,6 +8,7 @@ authors = ["Yutong Qiu <yutongq@andrew.cmu.edu>", "Chia Sin Liew <chiasin.liew@u
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pandas = "^1.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
