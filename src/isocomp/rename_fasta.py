@@ -26,28 +26,27 @@ usage:
 """
 
 import argparse
+import logging
+import sys
 import os
 
-parser = argparse.ArgumentParser(description="Rename FASTA sequence names")
-
-parser.add_argument(
-    "-i", "--input", required=True, help="path to input FASTA file", action="store"
-)
-parser.add_argument(
-    "-o", "--output", help="path to output renamed FASTA file", action="store",
-)
-parser.add_argument(
-    "-s",
-    "--sample",
-    required=True,
-    help="sample name to append to sequence name, e.g. sample1",
-    action="store",
-)
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-def rename_fa_desc(input_fa: str, output_fa: str, sample: str, i: int = 1):
-    # rename FASTA description to: ">SampleName_i_existingFastaSeqID"
-    # whereby i is the increment, and print the renamed FASTA entries
+__all__ = ['rename_fa_desc','main']
+
+def rename_fa_desc(input_fa: str, output_fa: str, sample: str, i: int = 1) -> None:
+    """rename FASTA description to: ">SampleName_i_existingFastaSeqID"
+    whereby i is the increment, and print the renamed FASTA entries
+
+    Args:
+        input_fa (str): _description_
+        output_fa (str): _description_
+        sample (str): _description_
+        i (int, optional): _description_. Defaults to 1.
+    """
+    # TODO docstring
+
     with open(input_fa, "r") as f, open(output_fa, "w") as r:
         print("Reading: ", sample)
         for line in f:
@@ -62,14 +61,47 @@ def rename_fa_desc(input_fa: str, output_fa: str, sample: str, i: int = 1):
         print("-" * 30)
 
 
-if __name__ == "__main__":
-    args = parser.parse_args()
+def parse_args(args=None):
+    Description = "Rename FASTA sequence names" # TODO write more thorough description
+    Epilog = "USAGE: isocomp rename_fasta -i genome.fasta -o renamed_genome.fasta -s sample1"
+
+    parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
+    parser.add_argument(
+        "-i", "--input", required=True, help="path to input FASTA file", action="store"
+    )
+    parser.add_argument(
+        "-o", "--output", help="path to output renamed FASTA file", action="store",
+    )
+    parser.add_argument(
+        "-s",
+        "--sample",
+        required=True,
+        help="sample name to append to sequence name, e.g. sample1",
+        action="store",
+    )
+    return parser.parse_args(args)
+
+def main(args=None):
+    
+    logging.debug('cmd ling arguments: {args}')
+    args = parse_args(args)
+
+    # Check inputs
+    logging.info('checking input...')
+    input_path_list = [args.input]
+    for input_path in input_path_list:
+        if not os.path.exists(input_path):
+            raise FileNotFoundError("Input file DNE: %s" %input_path)
+
     sample = args.sample
     input_fa = args.input
-    if not os.path.exists(input_fa):
-        raise SystemError("Error: %s does not exist\n" % input_fa)
+    
     if not args.output:
         output_fa = sample + ".renamed.fasta"
     else:
         output_fa = args.output
+    
     rename_fa_desc(input_fa, output_fa, sample)
+
+if __name__ == "__main__":
+    sys.exit(main())
