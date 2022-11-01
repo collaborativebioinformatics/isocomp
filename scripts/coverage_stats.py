@@ -1,5 +1,10 @@
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-import os, sys, argparse, re, datetime
+import os
+import sys
+import argparse
+import re
+import datetime
 #--------------------------------------------------------
 # parser
 #--------------------------------------------------------
