@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 import os
 import sys
@@ -145,8 +146,6 @@ def compareFunc(seqDict, outFile, minPercent):
             # isoforms in this sample
             this = [ sampleDict[q]['seq'] for q in sampleDict.keys() ]
 
-            #lookup = {}
-
             for anotherSample in allSamples.keys():
 
                 if anotherSample == sample: continue
@@ -177,7 +176,7 @@ def compareFunc(seqDict, outFile, minPercent):
                     # select alignments by percentile edit distance
                     if alns:
                         cut = numpy.percentile(eds, 100 - minPercent)
-                        picks = [ str(ed)+'_'+allNames[i]+'_'+cigars[i] for i,ed in enumerate(eds) if ed <= cut ]
+                        picks = [ '__'.join([str(ed),allNames[i],allSeqs[i],cigars[i]]) for i,ed in enumerate(eds) if ed <= cut ]
                     else:
                         picks = []
 
