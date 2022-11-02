@@ -11,7 +11,6 @@
 6. Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation)
 6. Evan	Biederstedt (HMS)
 
-
 ## Introduction
 NGS targeted sequencing and WES have become routine for clinical diagnosis of Mendelian disease [CITATION]. Family sequencing (or "trio sequencing") involves sequencing a patient and parents (trio) or other relatives. This improves the diagnostic potential via the interpretation of germline mutations and enables detection of de novo mutations which underlie most Mendelian disorders. 
 
@@ -48,11 +47,76 @@ Given high-quality assembled isoforms from 2-3 samples, we want to algorithmical
 ![](images/workflow_part2.png)
 
 ## Quick start
-
 ### Deployment
 
 Eventually, `pip install isocomp`.  But not yet.
 
+## DEPENDENCIES
+
+python >=3.8
+
+If you're working on `ada`, you'll need to update the old, crusty version of 
+python to something more modern and exciting. 
+
+__The easy way__ (untested, but should work):
+
+Install miniconda and create a conda env 
+with python 3.9
+
+__The manual method ([source](https://askubuntu.com/a/1424179))__ (tested, works):
+
+```
+ssh ... # your username login to ada
+
+mkdir /home/${USER}/.local
+
+# use your favorite text editor. no need to be vim
+vim /home/${USER}/.bashrc
+
+# add the following to the end (or where ever)
+export PATH=/home/$USER/.local/bin:$PATH
+
+# logout of the current session and log back in
+exit
+ssh ... (your username, etc)
+
+# Download a more current version of python
+wget https://www.python.org/ftp/python/3.9.15/Python-3.9.15.tgz
+
+# unpack
+tar xfp Python-3.9.15.tgz 
+# remove the tarball
+rm Python-3.9.15.tgz 
+
+# cd into the Python package dir, configure and make
+cd Python-3.9.15/
+
+./configure --prefix=/home/${USER}/.local --exec_prefix=/home/${USER}/.local --enable-optimizations
+
+make # this takes some time
+
+make altinstall
+
+# the following should point at a python in your /home/$USER/.local/bin dir
+which python3.9
+
+# optional, but convenient
+ln -s /home/$USER/.local/bin/python3.9 /home/$USER/.local/bin/python
+
+# Download the pip installer
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+# install pip
+python3.9 get-pip.py
+
+# confirm that pip is where you think it is
+which pip # location should be in your .local
+
+# at this point, you can do:
+pip install poetry
+
+# and continue with the development install below
+
+```
 ### Development
 
 Install [poetry](https://python-poetry.org/) and consider setting [the configuration 
