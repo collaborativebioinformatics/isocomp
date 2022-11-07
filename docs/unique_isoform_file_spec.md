@@ -11,7 +11,7 @@ Ideas:
 ##Unique isoforms
 ##Samples: 
 ##Reference: 
-##CHR    WINDOW_START    WINDOW_END    CHR    SHARED    ISOFORM_START    ISOFORM_END ...
+##CHR    WINDOW_START    WINDOW_END    SHARED    ISOFORM_START    ISOFORM_END ...
 ```
 
 The samples should be a comma-separated string of the samples
