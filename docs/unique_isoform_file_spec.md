@@ -5,7 +5,7 @@
 
 Do we need a header? We should return to this later....
 
-Ideas:
+Idea:
 
 ```
 ##Unique isoforms
@@ -88,15 +88,15 @@ End of the alignment of the isoform (against T2T). We get this from the BAM.
 QNAME of the isoform from the alignments (which were originally given in the FASTA file)
 
 
-**7. TXNAME
+**7. TXNAME**
 
 The transcript name associated with this isoform
 
-**8. GENE_NAME
+**8. GENE_NAME**
 
 The common gene name (based on HGNC) for the gene. It would be best if these were gene names, not Ensembl IDs.
 
-**9. SEQUENCE
+**9. SEQUENCE**
 
 The entire isoform sequence.
 
