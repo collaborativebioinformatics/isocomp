@@ -11,7 +11,7 @@ import re
 #--------------------------------------------------------
 # positional/optional arguments
 posList = ['inFile', 'outFile']
-optList = ['N']
+optList = ['N', 'debug']
 sys.stdout.write('\n'); sys.stdout.flush()
 # author and version info
 usage = sys.argv[0] + ' <options> ' + ' '.join(posList) + '\n'
@@ -24,7 +24,8 @@ parser = argparse.ArgumentParser(usage = '\n'.join([usage, author, version, desc
 parser.add_argument(posList[0], type=str, help='string\tinput file.  e.g. /in/unique_isoforms.tsv')
 parser.add_argument(posList[1], type=str, help='string\toutput file.  e.g. /out/unique_isoforms_variants.tsv')
 # optional arguments
-parser.add_argument('-n', '--'+optList[0], type=int, metavar='', default=10, help='float\tmaximum bases for indel combination (inclusive), default 10')
+parser.add_argument('-n', '--'+optList[0], type=int, metavar='', default=10, help='integer\tmaximum bases for indel combination (inclusive), default 10')
+parser.add_argument('-d', '--'+optList[1], action='store_true', help='boolean\tshow debug information.')
 
 # strict positional/optional arguments checking
 argsDict = vars(parser.parse_args())
@@ -44,9 +45,11 @@ sys.stdout.write('\n'); sys.stdout.flush()
 class cigar:
 
     def __init__(self):
+        self.refContig = '' # contig that ref aligned to
+        self.refStart = '' # starting pos that ref aligned to
         self.string = '' # cigar string
-        self.ref = '' # ref sequence
-        self.query = '' # query sequence
+        self.ref = '' # ref full sequence
+        self.query = '' # query full sequence
         self.refID = '' # ref id
         self.queryID = '' # query_id
         self.parsed = [] # parsed cigar
@@ -79,7 +82,7 @@ class cigar:
                 refPos += c[0]
             # insertions in query
             elif c[1] == 'I':
-                self.InDels.append([ 'ins', refPos, refPos, queryPos, queryPos+c[0], '.', self.query[queryPos-1:queryPos+c[0]-1] ])
+                self.InDels.append([ 'ins', refPos, refPos+1, queryPos, queryPos+c[0], '.', self.query[queryPos-1:queryPos+c[0]-1] ])
                 queryPos += c[0]
             else:
                 sys.exit('unknown cigar notation')
@@ -106,7 +109,10 @@ class cigar:
 
             # current InDel to be merged with the last one
             if (typeL == typeC or typeL == 'delins') and refStartC-refEndL <= cut and queryStartC-queryEndL <= cut:
-                updateInDels[-1] = [ 'delins', refStartL, refEndC, queryStartL, queryEndC, self.ref[refStartL-1:refEndC-1], self.ref[queryStartL-1:queryEndC-1] ]
+                if typeC == 'del':
+                    updateInDels[-1] = [ 'delins', refStartL, refEndC, queryStartL, queryEndC, self.ref[refStartL-1:refEndC-1], self.query[queryStartL-1:queryEndC-1] ]
+                else:
+                    updateInDels[-1] = [ 'delins', refStartL, refEndC, queryStartL, queryEndC, self.ref[refStartL-1:refEndC-2], self.query[queryStartL-1:queryEndC-1] ]
             # current InDel not to be merged
             else:
                 updateInDels.append(current)
@@ -130,38 +136,46 @@ class cigar:
 def main():
 
     out = open(outFile, 'w')
-    #out.write('\t'.join(['#ref_id','query_id','type','ref','alt','ref_start','ref_end','query_start','query_end','ref_seq','query_seq']) +'\n')
-    out.write('\t'.join(['#ref_id','query_id','type','ref','alt','ref_pos']) +'\n')
+    # header
+    out.write('##This is a header\n')
+    out.write('\t'.join(['#CHR','REF_START','POS','ID','REF','ALT','REFERENCE','QUERY']) +'\n')
+    #out.write('\t'.join(['#ref_id','query_id','type','ref','alt','ref_pos']) +'\n')
+
 
     with open(inFile) as f:
 
-        used = [('','')]*100
+        # queue of length 400 for check of duplicated entry
+        used = [('','')]*400
 
         for index,line in enumerate(f):
 
             if index == 0: continue
 
-            # parse input, skip entries with total==1
+            # parse input, skip entries with total==1 (no cigar string since the locus has only one isoform)
             try:
                 chr, start, end, total, query, sampleFrom, sampleTo, mapStart, querySeq, alns = line.strip().split('\t')
                 alns = alns.split(',')
             except:
                 continue
 
-            # skip duplicated entries
+            # skip duplicated entries (results are identical for duplicated entries)
             if (sampleFrom, query) in used: continue
             used = used[1:]
             used.append((sampleFrom, query))
 
             # obtain all candidate isoform alignments
-            cigars = [ a.split('__')[-1] for a in alns ]
-            refSeqs = [ a.split('__')[-2] for a in alns ]
-            refIDs = [ a.split('__')[-3] for a in alns ]
+            refIDs = [ a.split('__')[1] for a in alns ]
+            refContigs = [ a.split('__')[2] for a in alns ]
+            refStarts = [ a.split('__')[3] for a in alns ]
+            refSeqs = [ a.split('__')[4] for a in alns ]
+            cigars = [ a.split('__')[5] for a in alns ]
 
             # parse cigar and call variants
             for i,c in enumerate(cigars):
 
                 target = cigar()
+                target.refContig = refContigs[i]
+                target.refStart = refStarts[i]
                 target.string = c
                 target.ref = refSeqs[i]
                 target.query = querySeq
@@ -173,9 +187,33 @@ def main():
                 # refine indels
                 target.refine(N)
 
-                for v in target.SNPs + target.InDels:
-                    #out.write('\t'.join(map(str, [target.refID,target.queryID,v[0],v[-2],v[-1],v[1],v[2],v[3],v[4],target.ref,target.query])) +'\n')
-                    out.write('\t'.join(map(str, [target.refID,target.queryID,v[0],v[-2],v[-1],v[1]])) +'\n')
+                # output by sorted pos
+                temp = sorted(target.SNPs + target.InDels, key = lambda v: v[1])
+                for v in temp:
+
+                    if debug:
+                        print('\ndebug info:')
+                        print('ref/query id: %s/%s' %(target.refID,target.queryID))
+                        print('type: %s' %(v[0]))
+                        print('ref start/end: %s/%s' %(v[1],v[2]))
+                        print('query start/end: %s/%s' %(v[3],v[4]))
+                        print('ref seq: %s' %(v[-2]))
+                        print('ref seq: %s' %(v[-1]))
+                        print('ref full seq: %s' %(target.ref))
+                        print('ref full seq: %s' %(target.query))
+
+                    # CHR, REF_START, POS, ID, REF, ALT, REFERENCE, QUERY
+                    out.write('\t'.join(map(str, [target.refContig, \
+                                                  target.refStart, \
+                                                  v[1], \
+                                                  '%s-%s' %(target.refID,target.queryID), \
+                                                  v[-2], \
+                                                  v[-1], \
+                                                  target.ref, \
+                                                  target.query, \
+                                                  ])) +'\n')
+
+    out.close()
 
 #--------------------------------------------------------
 # main program
