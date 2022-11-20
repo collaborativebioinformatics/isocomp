@@ -96,7 +96,8 @@ def readSeqsFunc(inBed, manifest):
                 qname = read.query_name.split('_')[2]
                 outDict[locus][sample][qname] = {}
                 outDict[locus][sample][qname]['seq'] = seqDict[qname]
-                outDict[locus][sample][qname]['start'] = read.reference_start
+                outDict[locus][sample][qname]['contig'] = locus[0]
+                outDict[locus][sample][qname]['start'] = read.reference_start + 1 # convert 0-based to 1-based
                 outDict[locus][sample][qname]['query_length'] = read.query_length
 
         samfile.close()
@@ -159,9 +160,11 @@ def compareFunc(seqDict, outFile, minPercent):
                 for u in unique:
 
                     # all condidate sequences for N-W alignment
-                    allSeqs, allNames = [], []
+                    allSeqs, allContigs, allStarts, allNames = [], [], [], []
                     for s,d in allSamples.items():
                         allSeqs += [ d[q]['seq'] for q in d.keys() if d[q]['seq'] != u]
+                        allContigs += [ d[q]['contig'] for q in d.keys() if d[q]['seq'] != u]
+                        allStarts += [ d[q]['start'] for q in d.keys() if d[q]['seq'] != u]
                         allNames += [ s+'_'+q for q in d.keys() if d[q]['seq'] != u ]
 
                     # N-W alignment and save for quick lookup
@@ -176,7 +179,7 @@ def compareFunc(seqDict, outFile, minPercent):
                     # select alignments by percentile edit distance
                     if alns:
                         cut = numpy.percentile(eds, 100 - minPercent)
-                        picks = [ '__'.join([str(ed),allNames[i],allSeqs[i],cigars[i]]) for i,ed in enumerate(eds) if ed <= cut ]
+                        picks = [ '__'.join([str(ed),allNames[i],allContigs[i],str(allStarts[i]),allSeqs[i],cigars[i]]) for i,ed in enumerate(eds) if ed <= cut ]
                     else:
                         picks = []
 
