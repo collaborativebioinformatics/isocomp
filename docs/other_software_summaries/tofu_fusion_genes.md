@@ -25,7 +25,7 @@ def find_fusion_candidates(
 ```
 
  Those candidates are filtered and subsequently reported 
-(here)[https://github.com/Magdoll/cDNA_Cupcake/blob/81b7e7f6aeb53e15c11dd30a68a498a58e5f390a/cupcake/tofu/fusion_finder.py#L262]. 
+[here](https://github.com/Magdoll/cDNA_Cupcake/blob/81b7e7f6aeb53e15c11dd30a68a498a58e5f390a/cupcake/tofu/fusion_finder.py#L262). 
 
 ```python
 
