@@ -8,7 +8,7 @@ Description: The program finds unique isoforms by samples and genomic regions
 positional arguments:
   manifest            string	input manifest csv file in format: sample,bam,fa.  e.g. /in/manifest.csv
   inBed               string	input bed file.  e.g. /in/window.bed
-  outFile             string	output file.  e.g. /out/file.tsv
+  outFile             string	output file prefix.  e.g. /out/Pre
 
 optional arguments:
   -h, --help          show this help message and exit
@@ -17,7 +17,7 @@ optional arguments:
 
 ## Running script
 ```
-python3 find_unique_isoform.py manifest.csv window_boundaries_step4_yq.bed unique_isoforms.tsv
+python3 find_unique_isoform.py manifest.csv window_boundaries_step4_yq.bed out_prefix
 ```
 
 ## Input - manifest
