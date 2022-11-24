@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "isocomp"
+version = "0.1.0"
+description = ""
+authors = ["Yutong Qiu <yutongq@andrew.cmu.edu>", "Chia Sin Liew <chiasin.liew@unl.edu>", "Rupesh Kesharwani <rupesh.kesharwani@bcm.edu>", 
+           "Bida Gu <bidagu@usc.edu>", "chase mateusiak <chase.mateusiak@gmail.com>", 
+		   "Muhammad Sohail Raza <sohail@big.ac.cn>", "Evan Biederstedt <evan_biederstedt@hms.harvard.edu>" ]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^1.5.1"
+pybedtools = "^0.9.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+mkdocs = "^1.4.1"
+mkdocs-autorefs = "^0.4.1"
+mkdocs-section-index = "^0.3.4"
+mkdocstrings = "^0.19.0"
+mkdocs-jupyter = "^0.22.0"
+ipykernel = "^6.16.2"
+
+[tool.poetry.scripts]
+isocomp = "isocomp:__main__.main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

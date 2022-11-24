@@ -9,24 +9,21 @@ Requires:
 - transcript/RNA boundaries
     expected fields: ["chr", "start", "end", "geneName", "0", "-", "geneID", "biotype"]
 '''
-import pybedtools as pybed
-import pandas as pd
+import argparse
 from collections import defaultdict
 import sys, os
 import errno
 import warnings
+import logging
+
+import pybedtools as pybed
+import pandas as pd
+
 warnings.filterwarnings("ignore")
 
-def print_help():
-    """Print help
-    """
-    print("USAGE:\tpython %s <bp_cov_names> <gene_window_name>" % sys.argv[0])
-    print()
-    print("\tbp_cov_names \t\tcomma-delimited paths to 100bp windows with coverage for each sample")
-    print("\t\t\t\t   expected fields: [chr, start, end, per base coverage]")
-    print("\tgene_window_name \tpath to transcript/RNA boundaries")
-    print("\t\t\t\t   expected fields: [chr, start, end, geneName, 0, -, geneID, biotype]")
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
+__all__ = ['get_all_windows','further_merge','main']
 
 def get_all_windows(gene_df:pd.DataFrame, bp_df:pd.DataFrame) -> pd.DataFrame:
     """From gene boundaries and 100 bp nonzero coverage windows, produce a merged window df
@@ -134,7 +131,6 @@ def get_all_windows(gene_df:pd.DataFrame, bp_df:pd.DataFrame) -> pd.DataFrame:
     all_windows = pd.DataFrame(all_windows)
     return all_windows
 
-
 def further_merge(input_windows: pd.DataFrame) -> pd.DataFrame:
     """Further merge windows if they are < 100 bp apart
 
@@ -177,13 +173,40 @@ def further_merge(input_windows: pd.DataFrame) -> pd.DataFrame:
     new_windows = pd.DataFrame(new_windows)
     return new_windows
 
-if __name__ == "__main__":
-        
-    if len(sys.argv) != 3:
-        print_help()
-        exit(1)
+def parse_args(args=None):
+    Description = "A tool to create windows" # TODO write an actual description
+    Epilog = "USAGE: isocomp create_windows -t covname1 covname2 -g gene_windows.bed"
 
-    bp_cov_names = sys.argv[1].split(",")
+    parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
+    parser.add_argument("-t",
+                        "--tbp_cov_names",
+                         help="\n".join([
+                            "space delimited paths to 100bp windows with coverage for each sample",
+                            "expected fields: [chr, start, end, per base coverage]"]),
+                         required=True)
+    parser.add_argument("-g",
+                        "--gene_window_name",
+                         help="\n".join(
+                            ["path to transcript/RNA boundaries",
+                            "expected fields: [chr, start, end, geneName, "+\
+                                "0, -, geneID, biotype]"]),
+                         required=True)
+    return parser.parse_args(args)
+
+
+def main(args=None):
+
+    logging.debug('cmd ling arguments: {args}')
+    args = parse_args(args)
+
+    # Check inputs
+    logging.info('checking input...')
+    input_path_list = [args.gene_window_name]
+    for input_path in input_path_list:
+        if not os.path.exists(input_path):
+            raise FileNotFoundError("Input file DNE: %s" %input_path)
+
+    bp_cov_names = args.tbp_cov_names
     gene_window_name = sys.argv[2]
 
     assert len(bp_cov_names) == 3
@@ -258,3 +281,6 @@ if __name__ == "__main__":
     merged_windows.to_csv(out_dir+"4_merged_windows.bed", sep="\t", header=None, index=None)
 
     print("Output in "+out_dir+"4_merged_windows.bed")
+
+if __name__ == "__main__":
+    sys.exit(main())
