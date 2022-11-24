@@ -380,11 +380,10 @@ def main(manifest, unique_isoform_aln, mode, threshold):
     fig, ax = plt.subplots(1)
     ax.scatter(old_eds, new_eds, s=5)
     ax.plot([0, max(old_eds)], [0, max(old_eds)], color="red")
-    ax.set_xrange(0, 20)
     ax.set_xlabel("original edit distance")
     ax.set_ylabel("timmed edit distance")
     ax.set_title("Edit distance before and after trimming")
-    fig.savefig("ED_trim_%s_%s.png" % (mode, str(threshold)))
+    fig.savefig("ED_trim_scatter_%s_%s.png" % (mode, str(threshold)))
     print("Scatterplot saved to ED_trim_%s_%s.png" % (mode, str(threshold)))
 
 
@@ -396,7 +395,7 @@ def main(manifest, unique_isoform_aln, mode, threshold):
     ax.set_ylabel("Number of sequences")
     ax.legend()
 
-    fig.savefig("ED_trim_length_%s_%s.png" % (mode, str(threshold)))
+    fig.savefig("ED_trim_length_distribution_%s_%s.png" % (mode, str(threshold)))
     print("Histogram saved to ED_trim_length_%s_%s.png" % (mode, str(threshold)))
 
 if __name__ == "__main__":
