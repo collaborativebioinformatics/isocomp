@@ -1,9 +1,9 @@
 
 
 There seem to be three important bits of code surrounding fusion gene finding in 
-(cupcake/tofu)[https://github.com/Magdoll/cDNA_Cupcake/tree/master/cupcake/tofu]
+[cupcake/tofu](https://github.com/Magdoll/cDNA_Cupcake/tree/master/cupcake/tofu)
 
-First, (fusion gene candidates are identified)[https://github.com/Magdoll/cDNA_Cupcake/blob/81b7e7f6aeb53e15c11dd30a68a498a58e5f390a/cupcake/tofu/fusion_finder.py#L225].
+First, [fusion gene candidates are identified](https://github.com/Magdoll/cDNA_Cupcake/blob/81b7e7f6aeb53e15c11dd30a68a498a58e5f390a/cupcake/tofu/fusion_finder.py#L225).
 
 ```python
 def find_fusion_candidates(
