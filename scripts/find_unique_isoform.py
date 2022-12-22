@@ -95,11 +95,12 @@ def readSeqsFunc(inBed:str, manifest:str) -> dict[tuple[str,str,str], list[isofo
 
             checkList = []
             for read in samfile.fetch(locus[0], int(locus[1]), int(locus[2])):
-
-                #flag = '0'*(12-len(format(read.flag, 'b'))) + format(read.flag, 'b')
-                #if read.mapping_quality < 60: continue # filter by mapping quality 60
-                #if flag[0] == 1: continue # ignore supplementary alignment
-                #if flag[3] == 1: continue # ignore non-primary alignment
+                
+                ## future filters, comments for now
+                ##flag = '0'*(12-len(format(read.flag, 'b'))) + format(read.flag, 'b')
+                ##if read.mapping_quality < 60: continue # filter by mapping quality 60
+                ##if flag[0] == 1: continue # ignore supplementary alignment
+                ##if flag[3] == 1: continue # ignore non-primary alignment
 
                 temp = isoform()
                 temp.sample = sample
@@ -113,6 +114,7 @@ def readSeqsFunc(inBed:str, manifest:str) -> dict[tuple[str,str,str], list[isofo
                     temp.start = read.reference_start + 1 # convert 0-based to 1-based
                     temp.query_length = read.query_length
                     outDict[locus].append(temp)
+                    
 
         samfile.close()
 
