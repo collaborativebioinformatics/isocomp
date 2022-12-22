@@ -12,7 +12,7 @@ from Bio import SeqIO
 
 logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(message)s', \
-        datefmt='%m/%d/%Y %I:%M:%S', \
+        datefmt='%Y-%m-%d %I:%M:%S', \
         level=logging.DEBUG)
 
 
@@ -63,20 +63,16 @@ class isoform:
 
 
 # function to config input bed & bam & fa files
-def readSeqsFunc(inBed, manifest):
+def readSeqsFunc(inBed:str, manifest:str) -> dict[tuple[str,str,str], list[isoform]]:
+    """read all input information
 
-    '''
-    read all input information.
+    Args:
+        inBed (str): input bed file in "chr start end ..." format
+        manifest (str): input manifest file in "sample_id,path_to_bam,path_to_fasta" format
 
-    @parameter inBed - input bed file in "chr start end ..." format.
-    @parameter manifest - input manifest file in "sample_id,path_to_bam,path_to_fasta" format.
-
-    output
-
-    configed isoforms by genomic window
-        {locus1: [ isoform1, isoform2, ...], locus2: [...] ...}
-
-    '''
+    Returns:
+        dict[tuple[str,str,str], list[isoform]]: configed isoforms by genomic window
+    """
 
     outDict = {}
 
@@ -109,13 +105,14 @@ def readSeqsFunc(inBed, manifest):
                 temp.sample = sample
                 temp.name = read.query_name.split('_')[2]
                 temp.id = read.query_name
-                if temp.id in checkList: continue
-                checkList.append(temp.id)
-                temp.seq = seqDict[temp.name]
-                temp.contig = locus[0]
-                temp.start = read.reference_start + 1 # convert 0-based to 1-based
-                temp.query_length = read.query_length
-                outDict[locus].append(temp)
+
+                if not temp.id in checkList:
+                    checkList.append(temp.id)
+                    temp.seq = seqDict[temp.name]
+                    temp.contig = locus[0]
+                    temp.start = read.reference_start + 1 # convert 0-based to 1-based
+                    temp.query_length = read.query_length
+                    outDict[locus].append(temp)
 
         samfile.close()
 
@@ -123,16 +120,19 @@ def readSeqsFunc(inBed, manifest):
 
 
 # function for unique isoform search and N-W ed stats
-def compareFunc(seqDict, outPre, minPercent):
+def compareFunc(seqDict:dict[tuple[str,str,str], list[isoform]], outPre:str, minPercent:float) -> None:
+    """find unique isoforms and corresponding N-W alignment stats
+
+    Args:
+        seqDict (dict[tuple[str,str,str], list[isoform]]): configed isoform sequences from readSeqsFunc()
+        outPre (str): output file prefix for results
+        minPercent (float): minimum percentile for edit distance output (descending order)
+    """
+
+    outUni = open(outPre+'.unique_isoform.tsv', 'w')
+    outDiver = open(outPre+'.isoform_diversity.tsv', 'w')
 
     '''
-    find unique isoforms and corresponding N-W alignment stats.
-
-    @parameter seqDict - configed sequences from readSeqsFunc().
-    @parameter outPre - output file prefix for results.
-    @parameter minPercent - minimum percentile for edit distance output (descending order).
-
-    output files
     .unique_isoform.tsv
         win_chr                 genomic window chromosome
         win_start               genomic window start
@@ -145,7 +145,6 @@ def compareFunc(seqDict, outPre, minPercent):
         isoform_sequence        sequence of this isoform
         selected_alignments     selected pairwise alignments (by percentile edit distance) between this isoform and compared isoforms,
                                 in "edit-distance__isoform(compared)-id__isoform(compared)-chromosome__isoform(compared)-mapped-start__isoform(compared)-sequence__pairwise-alignment-cigar"
-
     .isoform_diversity.tsv
         win_chr                 genomic window chromosome
         win_start               genomic window start
@@ -157,9 +156,6 @@ def compareFunc(seqDict, outPre, minPercent):
         identical_isoforms      other isoforms in this window that are identical to this isoform
         divergent_isoforms      other isoforms in this window that are not identical to this isoform
     '''
-
-    outUni = open(outPre+'.unique_isoform.tsv', 'w')
-    outDiver = open(outPre+'.isoform_diversity.tsv', 'w')
 
     outUni.write('\t'.join(['win_chr', \
                          'win_start', \
@@ -191,45 +187,45 @@ def compareFunc(seqDict, outPre, minPercent):
 
         # unique isoforms
         for sample in samples:
-            this = [ s.seq for s in isoforms if s.sample == sample ]
+            isoformThisSample = [ s.seq for s in isoforms if s.sample == sample ]
 
             for anotherSample in samples:
-                if anotherSample == sample: continue
+                if not anotherSample == sample:
 
-                # isoforms in another sample
-                another = [ s.seq for s in isoforms if s.sample == anotherSample ]
-                # intersect to obtain unique isoforms in this sample
-                unique = sorted(list( set(this).difference(set(another)) ))
+                    # isoforms in another sample
+                    isoformAnotherSample = [ s.seq for s in isoforms if s.sample == anotherSample ]
+                    # intersect to obtain unique isoforms in this sample
+                    unique = sorted(list( set(isoformThisSample).difference(set(isoformAnotherSample)) ))
 
-                # N-W alignment stats
-                for u in unique:
+                    # N-W alignment stats
+                    for u in unique:
 
-                    # all condidate sequences for N-W alignment
-                    condidateSeqs = [ s.seq for s in isoforms if s.seq != u ]
-                    condidateContigs = [ s.contig for s in isoforms if s.seq != u ]
-                    condidateStarts = [ s.start for s in isoforms if s.seq != u ]
-                    condidateNames = [ s.name for s in isoforms if s.seq != u ]
+                        # all condidate sequences for N-W alignment
+                        condidateSeqs = [ s.seq for s in isoforms if s.seq != u ]
+                        condidateContigs = [ s.contig for s in isoforms if s.seq != u ]
+                        condidateStarts = [ s.start for s in isoforms if s.seq != u ]
+                        condidateNames = [ s.name for s in isoforms if s.seq != u ]
 
-                    # N-W alignment and save for quick lookup
-                    for a in condidateSeqs:
-                        if (u,a) not in lookup: lookup[(u,a)] = edlib.align(u, a, mode = 'NW', task = 'path')
+                        # N-W alignment and save for quick lookup
+                        for a in condidateSeqs:
+                            if (u,a) not in lookup: lookup[(u,a)] = edlib.align(u, a, mode = 'NW', task = 'path')
 
-                    # alignment stats
-                    alns = [ lookup[(u,a)] for a in condidateSeqs ]
-                    eds = [ round(aln['editDistance']/len(u),2) for aln in alns ]
-                    cigars = [ aln['cigar'] for aln in alns ]
+                        # alignment stats
+                        alns = [ lookup[(u,a)] for a in condidateSeqs ]
+                        eds = [ round(aln['editDistance']/len(u),2) for aln in alns ]
+                        cigars = [ aln['cigar'] for aln in alns ]
 
-                    # select alignments by percentile edit distance
-                    if alns:
-                        cut = numpy.percentile(eds, 100 - minPercent)
-                        picks = [ '__'.join([str(ed),condidateNames[i],condidateContigs[i],str(condidateStarts[i]),condidateSeqs[i],cigars[i]]) for i,ed in enumerate(eds) if ed <= cut ]
-                    else:
-                        picks = []
+                        # select alignments by percentile edit distance
+                        if alns:
+                            cut = numpy.percentile(eds, 100 - minPercent)
+                            selectedAlignments = [ '__'.join([str(ed),condidateNames[i],condidateContigs[i],str(condidateStarts[i]),condidateSeqs[i],cigars[i]]) for i,ed in enumerate(eds) if ed <= cut ]
+                        else:
+                            selectedAlignments = []
 
-                    # output all isoforms in this sample that has sequence "u"
-                    for isoform in [ s for s in isoforms if s.sample == sample ]:
-                        temp = [total, isoform.name, sample, anotherSample, isoform.start, u, ','.join(picks)]
-                        if isoform.seq == u: outUni.write('\t'.join( map(str, list(locus)+temp) ) +'\n')
+                        # output all isoforms in this sample that has sequence "u"
+                        for isoform in [ s for s in isoforms if s.sample == sample ]:
+                            temp = [total, isoform.name, sample, anotherSample, isoform.start, u, ','.join(selectedAlignments)]
+                            if isoform.seq == u: outUni.write('\t'.join( map(str, list(locus)+temp) ) +'\n')
 
 
         # all isoform identical/divergent record
@@ -238,11 +234,11 @@ def compareFunc(seqDict, outPre, minPercent):
             identical,divergent = [],[]
 
             for s in isoforms:
-                if s.id == isoform.id: continue
-                if s.seq == isoform.seq:
-                    identical.append(s.sample+'_'+s.name)
-                else:
-                    divergent.append(s.sample+'_'+s.name)
+                if s.id != isoform.id:
+                    if s.seq == isoform.seq:
+                        identical.append(s.sample+'_'+s.name)
+                    else:
+                        divergent.append(s.sample+'_'+s.name)
 
             temp = [total, isoform.name, isoform.sample, isoform.start, ','.join(identical), ','.join(divergent)]
             outDiver.write('\t'.join( map(str, list(locus)+temp) ) +'\n')
