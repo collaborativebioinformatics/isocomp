@@ -58,48 +58,67 @@ for key, value in argsDict.items():
     if key in posList: sys.stdout.write(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' - Required Argument - ' + key +': '+ str(value) + '\n'); sys.stdout.flush()
     if key in optList: sys.stdout.write(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' - Optional Argument - ' + key +': '+ str(value) + '\n'); sys.stdout.flush()
     vars()[key] = value # assign values of arguments into shorthand global variables
-sys.stdout.write('\n'); sys.stdout.flush()
+sys.stdout.write('\n')
+sys.stdout.flush()
 
-def extract_edits(cigar_str) -> list:
-    """Given a cigar string, return separated edits with counts
+
+def extract_edits(cigar_str:str):
+    """  Given a cigar string, return separated edits with counts
 
     Args:
-        cigar_str (str):
+        cigar_str (str): Input cigar string
 
     Returns:
-        list: a list of tuples of (count, edit_type)
+        all_edits (list): a list of tuples of (count, edit_type)
+
+    Example:
+        Input: 10=5I2D3X
+        Output: [(10, '='), (5, 'I'), (2, 'D'), (3, 'X')]
     """
+
     all_edits = [(int(s[:-1]), s[-1]) for s in re.findall(r'\d+[=,I,D,X]', cigar_str)]
     return all_edits
 
-def ed_from_cigar(cigar_str) -> int:
+def ed_from_cigar(cigar_str: str) -> int:
+
     """Compute edit distance from cigar strings
 
     Args:
         cigar_str (str): cigar string
 
     Returns:
-        int: edit distance that is equal to total length of the string minus the nu
+        edit_distance (int): edit distance that is equal to total length of the string minus the number of matched characters
+
+    Example: 
+        Input:10=5I2D3X
+        Output: 10 (total length = 20, total matched = 10)
     """
+    
     all_edits = extract_edits(cigar_str)
     total_length = sum([e[0] for e in all_edits])
     match_count = sum([e[0] for e in all_edits if e[1] == "="])
     return total_length - match_count
 
 def get_len_type(indel_list:list) -> tuple[str, str]:
-    """Given a list of indels, return the total length and type
+    """Given a list of indels, return the total length and type. This function concatenates indels of the same type. Just in case.
 
     Args:
         indel_list (list): list of indels
 
     Returns:
         tuple[str, str]: type, length
+
+    Example:
+        Input: 3D2D
+        Output: "D",5
     """
 
     indel_type = ""
     indel_length = 0
     if len(indel_list) != 0:
         for edit in indel_list:
+
+            # make sure that all indels are of the same type
             if indel_type != "":
                 assert indel_type == edit[-1]
             else:
@@ -115,23 +134,38 @@ def get_prefix_and_suffix_indels(cigar_str:str, mode="lenient") -> tuple:
 
     Returns:
         tuple: (list, list): prefix list of indels and suffix list of indels
+
+    Example:
+        Input1: 5D3X2=1I, "lenient"
+        Output1: ("D", 5), ("I", 1)
+
+        Input2: 5D3X2=1I, "strict"
+        Output2: ("", 0), ("", 0)
     """
     all_edits = extract_edits(cigar_str)
     prefix_indels = []
     suffix_indels = []
     i = 0
+    # investigate prefix of the cigar string
     for i in range(len(all_edits)):
+        # break out of the loop if the current edit is no longer an INDEL
         if all_edits[i][-1] != "I" and all_edits[i][-1] != "D":
             break
         prefix_indels.append(all_edits[i])
+
+    # investigate suffix of the cigar string
     j = len(all_edits)-1
     for j in range(len(all_edits)-1, -1, -1):
+        # break out of the loop if the current edit is no longer an INDEL
         if all_edits[j][-1] != "I" and all_edits[j][-1] != "D":
             break
         suffix_indels.append(all_edits[j])
-    for idx in range(i,j+1):
-        if all_edits[idx][-1] != "=" and mode == "strict":
-            return ("", 0), ("",0)
+
+    # under strict mode, do not trim if the sequences were not matched exactly
+    if mode == "strict":
+        for idx in range(i,j+1):
+            if all_edits[idx][-1] != "=":
+                return ("", 0), ("",0)
 
     # return prefix_indels, suffix_indels[::-1]
     return get_len_type(prefix_indels), get_len_type(suffix_indels[::-1])
@@ -145,12 +179,20 @@ def trim_seq(prefix_type, prefix_len, suffix_type, suffix_len, seq, num, thresho
         suffix_type (str):type of edits at the end of the cigar, ("I" or "D")
         suffix_len (int): length of suffix edits
         seq (str): input sequence to be trimmed
-        num (int): ranking of the sequence. If a sequence is the first in alignment, deletion means that removing. 
+        num (int): The order of the sequence in alignment. If a sequence is the first in alignment, deletion means that a character is removed. 
         Otherwise, insertion means trimming.
         threshold (int): maximum number of bases trimmed
 
     Returns:
         str: trimmed sequence
+
+    Example:
+        Input1: trim_seq("D", 1, "I",2, "ATCGAAG", 1)
+        Output1: "TCGAAG"  (The first character is trimmed but the suffix is not trimmed)
+        
+        Input2: trim_seq("D", 1, "I",2, "ATCGAAG", 2)
+        Output2: "ATCGA"  (The suffix of length 2 is trimmed but the prefix is not trimmed)
+
     """
     assert num == 1 or num == 2, "trim_seq(): unknown ranking of input sequence!"
 
@@ -247,7 +289,15 @@ def parseManifest(manifest:str) -> dict:
         read_sequence = read_fasta(fa, sample, read_sequence)
     return read_sequence
 
-def write_fasta(processed_read, read_sequence, mode, threshold):
+def write_fasta(processed_read: dict, read_sequence: dict:, mode: str, threshold: int):
+    """Writes the processed reads into a fasta file into sample_name_trimmed_mode_threshold.fasta for each sample in read_sequence
+
+    Args:
+        processed_read (dict): a dictionary of trimmed reads accessible by read name
+        read_sequence (dict): a dictionary of original reads accessible by read name
+        mode (str): lenient or strict
+        threshold (int): threshold for trimming
+    """
     records = defaultdict(list)
     for read_id in read_sequence:
         sample_name = read_id.split("_")[0]
