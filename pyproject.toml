@@ -5,11 +5,13 @@ description = ""
 authors = ["Yutong Qiu <yutongq@andrew.cmu.edu>", "Chia Sin Liew <chiasin.liew@unl.edu>", "Rupesh Kesharwani <rupesh.kesharwani@bcm.edu>", 
            "Bida Gu <bidagu@usc.edu>", "chase mateusiak <chase.mateusiak@gmail.com>", 
 		   "Muhammad Sohail Raza <sohail@big.ac.cn>", "Evan Biederstedt <evan_biederstedt@hms.harvard.edu>" ]
+exclude = ['Dockerfile', '*temp_*','docs', 'site', 'src/isocomp/tests', '.git','.venv','.github', 'dist', 'data', 'scripts', 'FinalPresentation_BCM_Hackathon_12Oct2022.pdf']
 
 [tool.poetry.dependencies]
 python = "^3.9"
 pandas = "^1.5.1"
 pybedtools = "^0.9.0"
+pyranges = "^0.0.120"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
