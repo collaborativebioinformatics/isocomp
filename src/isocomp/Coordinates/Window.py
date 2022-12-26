@@ -1,5 +1,6 @@
 # pylint:disable=C0209
 import logging
+import re
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -15,11 +16,29 @@ class Window:
     _STRAND_VALUES = ['+', '-', '*']
 
     def __init__(self, chr: str, window_start: int,
-                 window_end: int, strand: str):
+                 window_end: int, strand: str,
+                 name: str = "", score: int = 1000, **kwargs):
         self._chr = chr
         self._start = window_start
         self._end = window_end
         self._strand = strand
+        self._name = name
+        self._score = score
+        
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def __len__(self):
+        """length of the region"""
+        return self._end - self._start
+    
+    # TODO print additional keys which may be passed after this bed6 formatted 
+    # string
+    def __str__(self):
+        """print a description of the region to std out"""
+        return "\t".join([self._chr, str(self._start),
+                         str(self._end), str(self.name), str(self.score),
+                          self._strand])
 
     @property
     def chr(self):
@@ -74,11 +93,41 @@ class Window:
                              % (new_strand, ','.join(self._STRAND_VALUES)))
         self._strand = new_strand
 
-    def __len__(self):
-        """length of the region"""
-        return self._end - self._start
+    @property
+    def name(self):
+        """Store the name of a given window. Default constructor sets this to 
+        an empty string"""
+        return self._name
 
-    def __str__(self):
-        """print a description of the region to std out"""
-        return "\t".join([self._chr, str(self._start),
-                         str(self._end), self._strand])
+    @name.setter
+    def name(self, new_name: int):
+        new_name = str(new_name)
+        self._name = new_name
+
+    @property
+    def score(self):
+        """Store a score for a given window. Default constructor sets this 
+        to 1000"""
+        return self._score
+
+    @score.setter
+    def score(self, new_score: int):
+
+        logging.debug('new score: %s', new_score)
+
+        if not isinstance(new_score, int):
+            raise ValueError('Score must be an integer')
+        elif new_score < 0 or new_score > 1000:
+            Warning('Bed format requires score in interval [0,1000]')
+
+        self._score = new_score
+    
+    def to_dict(self) -> dict:
+        """transform a window's attributes into a dictionary
+
+        Returns:
+            dict: The attributes of a given window reformatted as a dictionary
+        """
+        d = vars(self)
+        # remove leading underscore from keys
+        return {re.sub(r"^_", '', k): v for k, v in d.items()}
