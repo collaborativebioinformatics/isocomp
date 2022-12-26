@@ -6,8 +6,11 @@ from logging.config import dictConfig
 import argparse
 from typing import Callable
 from importlib.metadata import version
+# extenal dependencies
+import pandas as pd
 # local imports
-from .Coordinates import utils
+from .Coordinates import create_comparison_windows
+from .Compare import find_unique_isoforms
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -26,7 +29,12 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         'create_windows': "from a list of SQANTI gtfs, create a bed6 "
         "formatted file -- 0 indexed, half open intervals -- where each entry "
         "in the bed file represents a discrete region of coverage over the "
-        "reference genome."
+        "reference genome.",
+        'find_unique_isoforms': "Using the clustered gtf output of "
+        "create_windows and a csv file with columns 'source' and 'fasta' "
+        "which provide a map from the unique values in 'Source' in the "
+        "clustered gtf to the corresponding fasta file, find unique "
+        "isoforms in the clusters described in the clustered_gtf."
     }
 
     # common options -- these can be applied to all scripts via the 'parent'---
@@ -85,8 +93,9 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         required=False)
     create_windows_output.add_argument(
         "--overwrite",
-        help="By default, create_windows will overwrite a file with the same " +
-        "name in the output directory. Set --no-overwrite to avoid overwriting.",
+        help="By default, create_windows will overwrite a file with the same "
+        "name in the output directory. "
+        "Set --no-overwrite to avoid overwriting.",
         action=argparse.BooleanOptionalAction,
         required=False)
 
@@ -102,16 +111,65 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
     #     type=int,
     #     default=10)
 
+    # find_unique_isoforms subparser ------------------------------------------
+
+    find_unique_isoforms_parser = subparsers.add_parser(
+        'find_unique_isoforms',
+        help=script_descriptions['find_unique_isoforms'],
+        description=script_descriptions['find_unique_isoforms'],
+        prog='find_unique_isoforms',
+        parents=[common_args])
+
+    # set the function to call when this subparser is used
+    find_unique_isoforms_parser.set_defaults(func=__find_unique_isoforms)
+
+    find_unique_isoforms_input = \
+        find_unique_isoforms_parser.add_argument_group('input')
+
+    find_unique_isoforms_input.add_argument(
+        "-a",
+        "--clustered_gtf",
+        help="path to the clustered gtf file, likely created by create_windows",
+        required=True)
+
+    find_unique_isoforms_input.add_argument(
+        "-f",
+        "--fasta_map",
+        help="path to a csv file with columns 'source' and 'fasta' which "
+        "provide a map between the unique factor levels of the Source "
+        "column of the clustered gtf and a corresponding fasta file which "
+        "stores the transcript sequences",
+        required=True)
+
+    find_unique_isoforms_output = \
+        find_unique_isoforms_parser.add_argument_group('output')
+    find_unique_isoforms_output.add_argument(
+        "-p",
+        "--output_prefix",
+        help="This should be either a file basename -- NO extension -- which "
+        "will be written to the current working directory, or a valid path "
+        "up to a filename, eg /output/path/concat would result in the file "
+        "output/path/concat.gtf being written",
+        default="",
+        required=False)
+    find_unique_isoforms_output.add_argument(
+        "--overwrite",
+        help="By default, find_unique_isoforms will overwrite a file "
+        "with the same name in the output directory. "
+        "Set --no-overwrite to avoid overwriting.",
+        action=argparse.BooleanOptionalAction,
+        required=False)
+
     # return the top level parser to be used in the main method below ---------
     return parser
 
 
-# TODO input to this function should be the gtfs and fastas which will be used 
-# to do the comparisons. This should call a function which takes the seqnames 
-# from each of the fastas and finds the corresponding column in a pyrange 
-# object created from the gtf. If the gtf does not fully describe the fasta, 
-# throw and error. Output something a json config file suitable to configure 
-# the isocomp processes (eg, maybe 'transcript' isn't the feature to use from 
+# TODO input to this function should be the gtfs and fastas which will be used
+# to do the comparisons. This should call a function which takes the seqnames
+# from each of the fastas and finds the corresponding column in a pyrange
+# object created from the gtf. If the gtf does not fully describe the fasta,
+# throw and error. Output something a json config file suitable to configure
+# the isocomp processes (eg, maybe 'transcript' isn't the feature to use from
 # col3 of the gtf or some such)
 def __validate_input(args=None) -> None:
     """_summary_
@@ -122,14 +180,21 @@ def __validate_input(args=None) -> None:
     raise NotImplementedError()
 
 
-def __create_windows_gtfs(args=None):
+def __create_windows_gtfs(args=None) -> None:
     """Entry point to merge gtf regions and write a merged gtf file. 
     Expected arguments are input(list of gtf paths),output_prefix(str) and 
-    overwrite(bool)"""
+    overwrite(bool)
+
+    Args:
+        args (argparse.Namespace, optional): argparse.Namespace parsed from 
+        the cmd line
+
+    Raises:
+        FileExistsError: raised if the output path exists and overwrite is 
+        False
+    """
     logging.debug(args)
 
-    clustered_regions = utils.create_comparison_windows(args.input)
-    
     # TODO consider stripping extension, if one is passed, from output_prefix
     output_filename = args.output_prefix+'.gtf' \
         if args.output_prefix \
@@ -141,12 +206,68 @@ def __create_windows_gtfs(args=None):
                               f'exists set overwrite to True if you wish '
                               'to overwrite')
 
+    clustered_regions = create_comparison_windows(args.input)
+
     # write out as a bed6 format file
     clustered_regions.to_gtf(output_filename)
 
 
+def __find_unique_isoforms(args=None) -> None:
+    """Entry point script to compare transcripts within each cluster in the 
+    clustered_gtf
+
+    Args:
+        args (argparse.Namespace, optional): argparse.Namespace parsed from 
+        the cmd line
+
+    Raises:
+        FileNotFoundError: raised if the input is not found
+        FileExistsError: raised if the output path exists and overwrite is 
+        False
+        KeyError: raised if the fasta_map doesn't conform to expectations on 
+        column names
+    """
+
+    logging.debug(args)
+
+    for path in [args.clustered_gtf, args.fasta_map]:
+        if not os.path.exists(path):
+            raise FileNotFoundError('%s does not exist' % path)  # pylint:disable=C0209 # noqa:E501,E261,E262
+
+    # TODO consider stripping extension, if one is passed, from output_prefix
+    output_filename = args.output_prefix+'.csv' \
+        if args.output_prefix \
+        else 'unique_isoforms.csv'
+    logging.debug(output_filename)
+    
+    if os.path.exists(output_filename) and not args.overwrite:
+        raise FileExistsError(f'file with name {output_filename} already '
+                              f'exists set overwrite to True if you wish '
+                              'to overwrite')
+
+    # read in the fasta_map csv to a DataFrame and do some checking
+    fasta_df = pd.read_csv(args.fasta_map)
+    if 'source' not in fasta_df.columns or 'fasta' not in fasta_df.columns:
+        raise KeyError('the fasta map must be a csv with labelled columns '
+                       'source, which stores the sample name corresponding to '
+                       'the clustered gtf Source column, and fasta, which '
+                       'stores the path to a fasta file which describes the '
+                       'isoform sequences')
+
+    # create the fasta_dict from the DataFrame
+    fasta_dict = dict(zip(fasta_df.source, fasta_df.fasta))
+
+    # compare within each cluster and filter the results
+    comparison_fltr_df = find_unique_isoforms(args.clustered_gtf, fasta_dict)
+
+    # write out the results
+    comparison_fltr_df.to_csv(output_filename, index=False)
+
+
 def main(args=None) -> None:
-    """Entry point to isocomp"""
+    """Entry point to isocomp. Note that aside from messing with how the 
+    logger is configured, you do not need to do anything with this function 
+    to add more cmd line scripts"""
 
     # parse the cmd line arguments
     arg_parser = parse_args()

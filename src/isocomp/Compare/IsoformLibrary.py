@@ -6,6 +6,9 @@ import pyranges as pr
 import pandas as pd
 import pysam
 
+# local imports
+from isocomp.Coordinates import Window
+
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __all__ = ['IsoformLibrary']
@@ -163,7 +166,19 @@ class IsoformLibrary():
 
     # public methods ----------------------------------------------------------
 
-    def get_isoform(self, source: str, isoform: str, **kwargs) -> str:
+    def get_isoform_seq(self, 
+                        source: str = None, 
+                        isoform: str = None, 
+                        unique_id: str = None, **kwargs) -> str:
+        
+        if unique_id:
+            iso_window = self.get_isoform_coord(unique_id=unique_id)
+            # todo address the flake issues without ignoring
+            source = iso_window.source #pylint:disable=E1101 # noqa:E261,E262
+            isoform = iso_window.name #pylint:disable=E1101 # noqa:E261,E262
+        
+        if not source or not isoform:
+            raise IOError('Either pass source and isoform, or unique_id')
 
         if source not in self.fasta_dict.keys():
             raise KeyError(f'the source: {source} is not in the '
@@ -174,10 +189,60 @@ class IsoformLibrary():
 
         return self.fasta_dict[source].fetch(reference=isoform, **kwargs)
 
-    def get_cluster(self, cluster: int) -> pr.PyRanges:
+    # TODO remove transcript_id field hard coding to external config
+    def get_isoform_coord(self,
+                          source: str = None,
+                          isoform: str = None,
+                          unique_id: str = None) -> Window:
+        isoform_gtf = []
+
+        if source and isoform:
+            isoform_gtf = self.clustered_gtf[
+                (self.clustered_gtf.Source == source) &
+                (self.clustered_gtf.transcript_id == isoform)]
+        elif unique_id:
+            isoform_gtf = self.clustered_gtf[
+                self.clustered_gtf.unique_id == unique_id]
+        else:
+            raise IOError('Either source and isoform, or unique_id '
+                          'must be passed in order to extract a isoform')
+
+        if len(isoform_gtf) == 0:
+            raise ValueError('Isoform %s in Source %s not found'  #pylint:disable=C0209 # noqa:E261,E501,E262
+                             % (isoform, source))
+        elif len(isoform_gtf) > 1:
+            raise KeyError('Isoform %s in source %s is not unique'  #pylint:disable=C0209 # noqa:E261,E501,E262
+                           % (isoform, source))
+
+        isoform_gtf_dict = isoform_gtf.df.to_dict('records')[0]
+
+        w = Window(
+            str(isoform_gtf_dict['Chromosome']),
+            int(isoform_gtf_dict['Start']),
+            int(isoform_gtf_dict['End']),
+            str(isoform_gtf_dict['Strand']),
+            name=str(isoform_gtf_dict['transcript_id']),
+            source = str(isoform_gtf_dict['Source']))
+
+        return w
+
+    def get_cluster(self, cluster: str) -> pr.PyRanges:
 
         if cluster not in self.cluster_list:
             raise ValueError(f'{cluster} not in cluster_list')
 
         # TODO remove hard coded Cluster to external config
         return self.clustered_gtf[self.clustered_gtf.Cluster == cluster]
+    
+    def get_cluster_coord(self, cluster: int, stranded: bool = True) -> dict:
+        cluster_gtf = self.get_cluster(cluster)
+
+        w = Window(
+            list(cluster_gtf.Chromosome)[0],
+            min(cluster_gtf.Start),
+            max(cluster_gtf.End),
+            list(cluster_gtf.Strand)[0] if stranded else "*",
+            name = str(cluster),
+            score = len(cluster_gtf))
+        
+        return w
