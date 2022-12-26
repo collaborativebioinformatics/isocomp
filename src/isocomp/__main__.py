@@ -50,7 +50,7 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         action='version',
         version='%(prog)s '+f'{version("isocomp")}')
 
-    # parse_bam subparser -----------------------------------------------------
+    # create_windows subparser ------------------------------------------------
     subparsers = parser.add_subparsers(
         help="Available Tools")
 
@@ -77,8 +77,10 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
     create_windows_output.add_argument(
         "-p",
         "--output_prefix",
-        help="path to output directory. if not provided, " +
-        "output to current working directory",
+        help="This should be either a file basename -- NO extension -- which "
+        "will be written to the current working directory, or a valid path "
+        "up to a filename, eg /output/path/concat would result in the file "
+        "output/path/concat.gtf being written",
         default="",
         required=False)
     create_windows_output.add_argument(
@@ -104,22 +106,34 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
     return parser
 
 
+# TODO input to this function should be the gtfs and fastas which will be used 
+# to do the comparisons. This should call a function which takes the seqnames 
+# from each of the fastas and finds the corresponding column in a pyrange 
+# object created from the gtf. If the gtf does not fully describe the fasta, 
+# throw and error. Output something a json config file suitable to configure 
+# the isocomp processes (eg, maybe 'transcript' isn't the feature to use from 
+# col3 of the gtf or some such)
+def __validate_input(args=None) -> None:
+    """_summary_
+
+    Args:
+        args (_type_, optional): _description_. Defaults to None.
+    """
+    raise NotImplementedError()
+
+
 def __create_windows_gtfs(args=None):
     """Entry point to merge gtf regions and write a merged gtf file. 
     Expected arguments are input(list of gtf paths),output_prefix(str) and 
     overwrite(bool)"""
     logging.debug(args)
 
-    merged_regions = utils.create_comparison_windows(args.input)
-
-    # add Name and Score columns per bed6 format
-    merged_regions.Name = ['region_'+str(x)
-                           for x in range(len(merged_regions))]
-    merged_regions.Score = [1000 for x in range(len(merged_regions))]
-
-    output_filename = args.output_prefix+'.bed' \
+    clustered_regions = utils.create_comparison_windows(args.input)
+    
+    # TODO consider stripping extension, if one is passed, from output_prefix
+    output_filename = args.output_prefix+'.gtf' \
         if args.output_prefix \
-        else 'merged_regions.bed'
+        else 'clustered_regions.gtf'
     logging.debug(output_filename)
 
     if os.path.exists(output_filename) and not args.overwrite:
@@ -128,9 +142,7 @@ def __create_windows_gtfs(args=None):
                               'to overwrite')
 
     # write out as a bed6 format file
-    merged_regions\
-        .df[['Chromosome', 'Start', 'End', 'Name', 'Score', 'Strand']]\
-        .to_csv(output_filename, sep='\t', header=None)
+    clustered_regions.to_gtf(output_filename)
 
 
 def main(args=None) -> None:
