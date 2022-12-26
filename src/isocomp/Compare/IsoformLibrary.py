@@ -21,14 +21,14 @@ class IsoformLibrary():
     def __init__(self,
                  clustered_gtf_path: str,
                  fasta_dict: dict,
-                 __validate_strict: bool = True) -> None:
+                 validate_strict: bool = True) -> None:
         # note that there is a good deal of validation of paths, data types,
         # that the Sources identified in the cluster_gtf match the fasta
         # sources (keys of the fasta_dict), and that the gtf transcripts
         # are all in the corresponding fasta
         self.clustered_gtf_path = clustered_gtf_path
         self.fasta_dict = fasta_dict
-        self.__validate(__validate_strict)
+        self.__validate(validate_strict)
 
     # properties getters/setters ----------------------------------------------
 

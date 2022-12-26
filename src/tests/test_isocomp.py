@@ -28,10 +28,10 @@ def test_collapse_intervals(gtf_path_list):
 
     tx_ranges = Coordinates.create_comparison_windows(gtf_path_list)
 
-    assert 2 == 2
+    assert 42 == 42
 
 def test_IsoformLibrary(capsys, clustered_gtf, fasta_dict):
 
     ia = Compare.IsoformLibrary(clustered_gtf, fasta_dict)
 
-    assert 2 == 2
+    assert 42 == 42
