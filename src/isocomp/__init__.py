@@ -1,3 +1,3 @@
-from . import create_windows,rename_fasta,Coordinates
+from . import Coordinates
 
 __version__ = '0.1.0'
