@@ -25,11 +25,12 @@ plugins:
 nav:
 - Install:
   - install.md
-- "Algorithm Overview":
-  - algorithm_overview/algorithm_description.md
 - "Command Line Usage": 
   - cmd_line/cmd_line_usage.md
+- "Algorithm Overview":
+  - algorithm_overview/algorithm_description.md
 - "API and API usage":
+  - "Using the API": api/api_tutorial.ipynb
   - Modules:
     - Coordinates: 
       - Classes:
@@ -45,8 +46,6 @@ nav:
         - compare_isoforms_in_cluster: api/compare/functions/compare_isoforms_in_cluster.md
         - filter_comparisons: api/compare/functions/filter_comparisons.md
         - find_unique_isoforms: api/compare/functions/find_unique_isoforms.md
-
-  - "Using the API": api/api_tutorial.ipynb
 - "Summaries of Similar Softwares":
   - "Cupcake/Tofu FusionFinder": other_software_summaries/tofu_fusion_genes.md
 

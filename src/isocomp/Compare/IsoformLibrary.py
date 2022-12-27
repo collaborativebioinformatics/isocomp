@@ -15,6 +15,21 @@ __all__ = ['IsoformLibrary']
 
 
 class IsoformLibrary():
+    """This class offers a method of extracting data from a 
+        clustered_regions gtf file and a corresponding fasta file with 
+        isoform sequences
+
+    Args:
+        clustered_gtf_path (str): path to a clustered gtf file, intended to 
+        be one output by create_windows()
+        fasta_dict (dict): A dictionary where the keys are factor levels of 
+        the Source column in the clustered_regions gtf and the value is 
+        a path to a fasta which stores isoform sequences
+        validate_strict (bool, optional): Set to False to warn, rather than 
+        error, if the fasta_dict keys do not fully match the gtf Source 
+        factor levels, and the transcripts in the gtf do not fully match 
+        the sequence names in the fasta. Defaults to True.
+    """
 
     _clustered_gtf_path = None
     _clustered_gtf = None
@@ -37,6 +52,8 @@ class IsoformLibrary():
 
     @property
     def clustered_gtf_path(self) -> str:
+        """path to a gtf which has been clustered by pyranges. intended to 
+        be the clustered gtf output by create_windows"""
         return self._clustered_gtf_path
 
     @clustered_gtf_path.setter
@@ -54,13 +71,19 @@ class IsoformLibrary():
 
     @property
     def clustered_gtf(self) -> pr.PyRanges:
+        """the clustered_gtf_path read in as a pr.PyRanges obj"""
         return self._clustered_gtf
 
     @clustered_gtf.setter
     def clustered_gtf(self, new_gtf_pr: pr.PyRanges) -> None:
+        
+        # validate object type
         if not isinstance(new_gtf_pr, pr.PyRanges):
             raise ValueError('clustered_gtf must be a '
                              'pyranges.PyRanges object')
+
+        # check that unique_id is a column, if it is, ensure that it is 
+        # actually unique. If it is not, add a unique_id column
         if 'unique_id' in new_gtf_pr.columns:
             if not len(set(new_gtf_pr.unique_id)) == len(new_gtf_pr):
                 raise NameError('There exists a column called unique_id '
@@ -76,6 +99,7 @@ class IsoformLibrary():
 
     @property
     def cluster_list(self) -> list:
+        """the unique list of cluster levels in the gtf Cluster column"""
         return self._cluster_list
 
     @cluster_list.setter
@@ -84,10 +108,25 @@ class IsoformLibrary():
 
     @property
     def fasta_dict(self) -> dict:
+        """A dictionary where the keys are factor levels of the Source column 
+        in the clustered_regions gtf and the value is a path to a fasta which 
+        stores isoform sequences"""
         return self._fasta_dict
 
     @fasta_dict.setter
     def fasta_dict(self, new_fasta_dict: dict) -> None:
+        """Read in the fasta paths as pysam.FastaFile objects
+
+        Args:
+            fasta_dict (dict): A dictionary where the keys are factor levels of 
+            the Source column in the clustered_regions gtf and the value is 
+            a path to a fasta which stores isoform sequences
+
+        Raises:
+            ValueError: raised if the fasta_dict is not a dict obj
+            FileNotFoundError: raised if the fasta, __or__ the fasta.fai 
+            index file does not exist
+        """
 
         logging.debug("new dict: %s", new_fasta_dict)
 
@@ -114,12 +153,43 @@ class IsoformLibrary():
     # private methods ---------------------------------------------------------
 
     def __open_gtf(self, gtf_path: str) -> pr.PyRanges:
+        """read in the gtf path to a PyRanges obj
+
+        Args:
+            gtf_path (str): path to a gtf file
+
+        Returns:
+            pr.PyRanges: the gtf file read into memory as a PyRanges obj
+        """
         return pr.read_gtf(gtf_path)
 
     def __open_fastas(self, fasta_dict) -> dict:
+        """Use pysam to open the fasta file
+
+        Args:
+            fasta_dict (dict): A dictionary where the keys are factor levels of 
+            the Source column in the clustered_regions gtf and the value is 
+            a path to a fasta which stores isoform sequences 
+
+        Returns:
+            dict: _description_
+        """
         return {k: pysam.FastaFile(v) for k, v in fasta_dict.items()}  # pylint:disable=E1101 # noqa: E501
 
     def __validate(self, strict: bool = True) -> None:
+        """Perform validation checks on the gtf and fasta to ensure that 
+        the Source and isoform/transcript names are as expected
+
+        Args:
+        strict (bool, optional): Set to False to warn, rather than 
+        error, if the fasta_dict keys do not fully match the gtf Source 
+        factor levels, and the transcripts in the gtf do not fully match 
+        the sequence names in the fasta. Defaults to True.
+
+        Raises:
+            ValueError: Raised when an expectation on the gtf/fasta 
+            correspondence is not met
+        """
 
         # validate that the set of 'Sources' in the source column and the
         # keys of fasta_dict are the same
@@ -170,6 +240,30 @@ class IsoformLibrary():
                         source: str = None, 
                         isoform: str = None, 
                         unique_id: str = None, **kwargs) -> str:
+        """Given either the `source` and `isoform` or the `unique_id`, 
+        get the isoform sequence
+
+        Args:
+            source (str, optional): A value in the Source column of the gtf.
+            if this is provided, then isoform must also be provided
+            isoform (str, optional): A name of the isoform/transcript. If this 
+            is provided, source must also be provided
+            unique_id (str, optional): A unique_id for a given isoform. 
+            if this is provided, then neither source or isoform need be.
+            **kwargs (named arguments, optional): additional arguments, 
+            other than reference, to pysam.FastaFile.fetch(), eg start and end
+
+        Raises:
+            IOError: Raised if the input combination is illegal, eg only 
+            source or only isoform.
+            KeyError: raised if source is passed and it is not a recognized 
+            source
+            ValueError: raised if isoform is passed and it is not a recognized 
+            isoform/transcript_id
+
+        Returns:
+            str: The requested isoform sequence
+        """
         
         if unique_id:
             iso_window = self.get_isoform_coord(unique_id=unique_id)
@@ -194,8 +288,37 @@ class IsoformLibrary():
                           source: str = None,
                           isoform: str = None,
                           unique_id: str = None) -> Window:
-        isoform_gtf = []
+        """Given either the `source` and `isoform` or the `unique_id`, 
+        create a Window object which describes the isoform's coordinates
 
+        Args:
+            source (str, optional): A value in the Source column of the gtf.
+            if this is provided, then isoform must also be provided
+            isoform (str, optional): A name of the isoform/transcript. If this 
+            is provided, source must also be provided
+            unique_id (str, optional): A unique_id for a given isoform. 
+            if this is provided, then neither source or isoform need be.
+            **kwargs (named arguments, optional): additional arguments, 
+
+        Raises:
+            IOError: Raised if the input combination is illegal, eg only 
+            source or only isoform.
+            KeyError: raised if source is passed and it is not a recognized 
+            source
+            ValueError: raised if isoform is passed and it is not a recognized 
+            isoform/transcript_id
+
+        Returns:
+            Window: _description_
+        """
+        # instantiate a DUMMY variable -- this will evaluate to 
+        # false if the right combination of input is not found and a 
+        # error will be raised
+        isoform_gtf = []
+        
+        # The user must submit either source + isoform or unique_id. The 
+        # following logic deals with that variable input. Too bad python 
+        # doesn't have function overloading
         if source and isoform:
             isoform_gtf = self.clustered_gtf[
                 (self.clustered_gtf.Source == source) &
@@ -206,27 +329,43 @@ class IsoformLibrary():
         else:
             raise IOError('Either source and isoform, or unique_id '
                           'must be passed in order to extract a isoform')
-
+        # validate
         if len(isoform_gtf) == 0:
             raise ValueError('Isoform %s in Source %s not found'  #pylint:disable=C0209 # noqa:E261,E501,E262
                              % (isoform, source))
         elif len(isoform_gtf) > 1:
             raise KeyError('Isoform %s in source %s is not unique'  #pylint:disable=C0209 # noqa:E261,E501,E262
                            % (isoform, source))
-
+        
+        # convert the subsetted gtf to a dict for easy extraction
         isoform_gtf_dict = isoform_gtf.df.to_dict('records')[0]
 
+        # create a Window object which describes the isoform
         w = Window(
             str(isoform_gtf_dict['Chromosome']),
             int(isoform_gtf_dict['Start']),
             int(isoform_gtf_dict['End']),
             str(isoform_gtf_dict['Strand']),
             name=str(isoform_gtf_dict['transcript_id']),
-            source = str(isoform_gtf_dict['Source']))
+            source=str(isoform_gtf_dict['Source']))
 
         return w
 
     def get_cluster(self, cluster: str) -> pr.PyRanges:
+        """Given a cluster id, return the cluster_gtf subsetted down 
+        to just that cluster
+
+        Args:
+            cluster (str): a valid factor level in the Cluster column of the 
+            gtf object
+
+        Raises:
+            ValueError: raised if the cluster id is not in the gtf Cluster 
+            column
+
+        Returns:
+            pr.PyRanges: A clustered_gtf PyRanges obj for a single cluster
+        """
 
         if cluster not in self.cluster_list:
             raise ValueError(f'{cluster} not in cluster_list')
@@ -234,15 +373,31 @@ class IsoformLibrary():
         # TODO remove hard coded Cluster to external config
         return self.clustered_gtf[self.clustered_gtf.Cluster == cluster]
     
-    def get_cluster_coord(self, cluster: int, stranded: bool = True) -> dict:
-        cluster_gtf = self.get_cluster(cluster)
+    def get_cluster_coord(self, cluster: int, stranded: bool = True) -> Window:
+        """Given a cluster id, create a Window object which describes 
+        the cluster coordinates and number of isoforms
 
+        Args:
+            cluster (str): a valid factor level in the Cluster column of the 
+            gtf object
+            stranded (bool, optional): Set to False if the gtf was clustered 
+            without reference to strand. Defaults to True.
+
+        Returns:
+            Window: A window object which describes a given cluster. __NOTE__ 
+                    that the `score` attribute is the number of 
+                    isoforms in the cluster
+        """
+        # extract a subset of the clustered_gtf for just 1 cluster
+        cluster_gtf = self.get_cluster(cluster)
+        
+        # create a Window obj which describes the cluster's region
         w = Window(
             list(cluster_gtf.Chromosome)[0],
             min(cluster_gtf.Start),
             max(cluster_gtf.End),
             list(cluster_gtf.Strand)[0] if stranded else "*",
-            name = str(cluster),
-            score = len(cluster_gtf))
+            name=str(cluster),
+            score=len(cluster_gtf))
         
         return w
