@@ -104,7 +104,7 @@ Eventually, `pip install isocomp`.  But not yet.
 
 ## DEPENDENCIES
 
-python >=3.8
+python >=3.9
 
 If you're working on `ada`, you'll need to update the old, crusty version of 
 python to something more modern and exciting. 

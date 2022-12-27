@@ -57,3 +57,78 @@ output:
   --overwrite, --no-overwrite
                         By default, create_windows will overwrite a file with the same name in the output directory. Set --no-overwrite to avoid overwriting.
 ```
+
+# create_windows
+
+If you have a directory which looks like the following:
+
+```raw
+├── clustered_regions.gtf
+├── fasta_map.csv
+├── hg002_classification.txt
+├── hg002_sqanti_fltr.fasta
+├── hg002_sqanti_fltr.fasta.fai
+├── hg002_sqanti_fltr.gtf
+├── hg004_classification.txt
+├── hg004_sqanti_fltr.fasta
+├── hg004_sqanti_fltr.fasta.fai
+├── hg004_sqanti_fltr.gtf
+├── hg005_classification.txt
+├── hg005_sqanti_fltr.fasta
+├── hg005_sqanti_fltr.fasta.fai
+├── hg005_sqanti_fltr.gtf
+└── unique_isoforms.csv
+```
+
+Note that this happens to be the test data directory in `isocomp`
+
+Then you could run `create_windows` like so:
+
+```bash
+isocomp create_indows -i /path/to/input_dir/*gtf
+```
+
+or, more explicitely
+
+```bash
+isocomp create_indows -i /path/to/input_dir/hg002_sqanti_fltr.gtf /path/to/input_dir/hg004_sqanti_fltr.gtf /path/to/input_dir/hg005_sqanti_fltr.gtf
+```
+
+This will output clustered_regions.gtf in the `$PWD`
+
+# find_unique_isoforms
+
+Input to find_unique_isoforms is clustered gtf which is output by 
+`create_windows` and a `csv` file with the columns `source` and `fasta` 
+where the records store a value which corresponds to a unique factor level 
+in the `clustered_regions.gtf` `Source` column and a path to a fasta file 
+which stores the isoform sequences.  
+
+For example, the clustered_gtf might look like this:
+
+```raw
+➜  data git:(oop_ify) ✗ head clustered_regions.gtf 
+chr1	hg004_sqanti_fltr	transcript	1013497	1014531	.	+	.transcript_id "PB.13.1"; gene_id "PB.13"; Cluster "1";
+chr1	hg005_sqanti_fltr	transcript	1013497	1014531	.	+	.transcript_id "PB.17.1"; gene_id "PB.17"; Cluster "1";
+chr1	hg005_sqanti_fltr	transcript	1013497	1014531	.	+	.transcript_id "PB.17.2"; gene_id "PB.17"; Cluster "1";
+chr1	hg002_sqanti_fltr	transcript	1013504	1014531	.	+	.transcript_id "PB.17.2"; gene_id "PB.17"; Cluster "1";
+chr1	hg004_sqanti_fltr	transcript	1013532	1014531	.	+	.transcript_id "PB.13.2"; gene_id "PB.13"; Cluster "1";
+chr1	hg005_sqanti_fltr	transcript	1020120	1056112	.	+	.transcript_id "PB.18.3"; gene_id "PB.18"; Cluster "2";
+
+```
+
+while the fasta map would look like this:
+
+```raw
+source,fasta
+hg002_sqanti_fltr,/home/oguzkhan/code/isocomp/src/tests/data/hg002_sqanti_fltr.fasta
+hg004_sqanti_fltr,/home/oguzkhan/code/isocomp/src/tests/data/hg004_sqanti_fltr.fasta
+hg005_sqanti_fltr,/home/oguzkhan/code/isocomp/src/tests/data/hg005_sqanti_fltr.fasta
+
+```
+
+To find the unique isoforms in each cluster, use `find_unique_isoforms` as follows:
+
+```bash
+isocomp find_unique_isoforms -a clustered_regions.gtf -f fasta_map.csv
+```
