@@ -1,8 +1,8 @@
+
 #!/usr/bin/env python3
 '''
 Author: Yutong Qiu
 Date: Oct 11, 2022
-
 Requires: 
 - 100bp windows with coverage for each sample
     expected fields: ["chr", "start", "end", "per base coverage"]
@@ -27,11 +27,9 @@ __all__ = ['get_all_windows','further_merge','main']
 
 def get_all_windows(gene_df:pd.DataFrame, bp_df:pd.DataFrame) -> pd.DataFrame:
     """From gene boundaries and 100 bp nonzero coverage windows, produce a merged window df
-
     Args:
         gene_df (pd.DataFrame): one window per gene, > 0.05 avg coverage
         bp_df (pd.DataFrame): one window per 100 bp, > 0.05 avg coverage
-
     Returns:
         pd.DataFrame: merged windows df
     """
@@ -133,10 +131,8 @@ def get_all_windows(gene_df:pd.DataFrame, bp_df:pd.DataFrame) -> pd.DataFrame:
 
 def further_merge(input_windows: pd.DataFrame) -> pd.DataFrame:
     """Further merge windows if they are < 100 bp apart
-
     Args:
         input_windows (pd.DataFrame): a set of windows from merging gene boundaries and 100bp windows with non zero coverage
-
     Returns:
         pd.DataFrame: Merged windows
     """

@@ -1,0 +1,6 @@
+cluster,chr,isoform1_source,isoform1_name,isoform1_start,isoform1_end,isoform1_strand,isoform2_source,isoform2_name,isoform2_start,isoform2_end,isoform2_strand,normalized_edit_dist,cigar
+9,chr1,hg005_sqanti_fltr,PB.12.8,944213,959256,-,hg002_sqanti_fltr,PB.13.10,944212,959256,-,0.0,2761=1D
+12,chr1,hg004_sqanti_fltr,PB.22.3,1253914,1273848,-,hg002_sqanti_fltr,PB.26.1,1253913,1273843,-,0.0,2=3I1=2I2243=1D
+12,chr1,hg004_sqanti_fltr,PB.22.3,1253914,1273848,-,hg005_sqanti_fltr,PB.26.1,1253914,1273848,-,0.0,2251=
+12,chr1,hg002_sqanti_fltr,PB.26.1,1253913,1273843,-,hg005_sqanti_fltr,PB.26.1,1253914,1273848,-,0.0,2=3D1=2D2243=1I
+1,chr1,hg005_sqanti_fltr,PB.17.1,1013496,1014531,+,hg004_sqanti_fltr,PB.13.1,1013496,1014531,+,0.0,1035=
