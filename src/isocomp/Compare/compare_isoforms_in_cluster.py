@@ -120,8 +120,10 @@ def compare_isoforms_in_cluster(
             out.append(__output_dict(cluster,
                                      cluster_window.chr,
                                      isoform1_window))
-    # else there are mutiple isoforms -- do an all by all comparison of the
+    # else there are mutiple subjects -- do an all by all comparison of the
     # isoforms in the cluster
+    # TODO parameterize the cases in which isoforms are compared --eg, 
+    # same strand, overlap threshold, different subjects
     else:
         # this produces a cartesian product of sorts... looks something
         # like this:
