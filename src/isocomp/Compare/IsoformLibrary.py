@@ -370,7 +370,8 @@ class IsoformLibrary():
         if cluster not in self.cluster_list:
             raise ValueError(f'{cluster} not in cluster_list')
 
-        # TODO remove hard coded Cluster to external config
+        # NOTE: the Cluster property exists because of pyranges, though this 
+        # of course depends on the pyranges API
         return self.clustered_gtf[self.clustered_gtf.Cluster == cluster]
     
     def get_cluster_coord(self, cluster: int, stranded: bool = True) -> Window:
@@ -392,12 +393,15 @@ class IsoformLibrary():
         cluster_gtf = self.get_cluster(cluster)
         
         # create a Window obj which describes the cluster's region
+        # NOTE: the score attribute is the number of sources (individuals)
+        # in the cluster. Also, this depends on the Source column being 
+        # populated appropriately
         w = Window(
             list(cluster_gtf.Chromosome)[0],
             min(cluster_gtf.Start),
             max(cluster_gtf.End),
             list(cluster_gtf.Strand)[0] if stranded else "*",
             name=str(cluster),
-            score=len(cluster_gtf))
+            score=len(cluster_gtf.Source.unique()))
         
         return w

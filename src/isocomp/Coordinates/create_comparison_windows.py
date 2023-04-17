@@ -13,7 +13,9 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 __all__ = ['create_comparison_windows']
 
 
-def create_comparison_windows(gtf_list: list, **kwargs) -> pr.PyRanges:
+def create_comparison_windows(gtf_list: list, 
+                              feature: str = 'transcript', 
+                              **kwargs) -> pr.PyRanges:
     """Read in gtf files to pyrange objects. To each gtf, replace the 'source' 
     with the base filename (no extention) of the gtf file. Filter on Feature 
     'transcript' and cluster overlapping ranges. Each cluster will be 
@@ -22,6 +24,7 @@ def create_comparison_windows(gtf_list: list, **kwargs) -> pr.PyRanges:
 
     Args:
         gtf_list (list): a list of paths to gtf files
+        feature (str): The feature on which to cluster. Default is 'transcript'
         **kwargs (dict): optional keyword arguments for pr.merge()
 
     Raises:
@@ -58,9 +61,10 @@ def create_comparison_windows(gtf_list: list, **kwargs) -> pr.PyRanges:
 
     # merge ranges. pass any additional keyword arguments
     # from the function call to pr.merge
-    # TODO address hardcoding of 'transcript' -- see
+    # TODO make sure that there is a way of validating that feature is a valid
+    # feature in the gtf file. See
     # __validate_input() in __main__ for note on creating a config json
-    concat_ranges = concat_ranges[concat_ranges.Feature == 'transcript']
+    concat_ranges = concat_ranges[concat_ranges.Feature == feature]
     clustered_ranges = concat_ranges.cluster(**kwargs)
 
     logging.debug('number of merged ranges: %s',

@@ -8,6 +8,7 @@ from typing import Callable
 from importlib.metadata import version
 # extenal dependencies
 import pandas as pd
+from Bio import SeqIO
 # local imports
 from .Coordinates import create_comparison_windows
 from .Compare import find_unique_isoforms
@@ -26,6 +27,8 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
     # create the top-level parser
 
     script_descriptions = {
+        'fasta_to_fastq': "convert a fasta file to a fastq file with max "
+        "quality for each base pair",
         'create_windows': "from a list of SQANTI gtfs, create a bed6 "
         "formatted file -- 0 indexed, half open intervals -- where each entry "
         "in the bed file represents a discrete region of coverage over the "
@@ -57,11 +60,34 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         "--version",
         action='version',
         version='%(prog)s '+f'{version("isocomp")}')
-
-    # create_windows subparser ------------------------------------------------
+    
+    # create a subparser
     subparsers = parser.add_subparsers(
         help="Available Tools")
 
+    # fasta_to_fastq subparser ------------------------------------------------
+
+    fasta_to_fastq_parser = subparsers.add_parser(
+        'fasta_to_fastq',
+        help=script_descriptions['fasta_to_fastq'],
+        description=script_descriptions['fasta_to_fastq'],
+        prog='fasta_to_fastq',
+        parents=[common_args])
+
+    # set the function to call when this subparser is used
+    fasta_to_fastq_parser.set_defaults(func=__fasta_to_fastq)
+
+    fasta_to_fastq_input = \
+        fasta_to_fastq_parser.add_argument_group('input')
+
+    fasta_to_fastq_input.add_argument(
+        "-i",
+        "--fasta",
+        help="path to a fasta file. Output is to standard out",
+        required=True)
+
+    # create_windows subparser ------------------------------------------------
+    
     create_windows_parser = subparsers.add_parser(
         'create_windows',
         help=script_descriptions['create_windows'],
@@ -80,15 +106,21 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         help="a space delimited list of paths to gtf files from a " +
         "concatenated merged set of regions will be created",
         required=True)
+    create_windows_input.add_argument(
+        "-f",
+        "--feature",
+        help="The feature on which to cluster. Default is transcript",
+        default="transcript",
+        required=True)
 
     create_windows_output = create_windows_parser.add_argument_group('output')
     create_windows_output.add_argument(
-        "-p",
+        "-o",
         "--output_prefix",
-        help="This should be either a file basename -- NO extension -- which "
+        help="This should be either a file basename, which "
         "will be written to the current working directory, or a valid path "
-        "up to a filename, eg /output/path/concat would result in the file "
-        "output/path/concat.gtf being written",
+        "up to a file basename, eg /output/path/concat would result in the "
+        "file output/path/concat.gtf being written",
         default="",
         required=False)
     create_windows_output.add_argument(
@@ -180,6 +212,23 @@ def __validate_input(args=None) -> None:
     raise NotImplementedError()
 
 
+def __fasta_to_fastq(args=None) -> None:
+    """Convert a fasta file to a fastq file. This function simply iterates 
+    over a fasta file and prints a fastq file line for each line of the fasta 
+    file
+
+    Args:
+        args (argparse.Namespace, optional): Expects one argument, named 
+        fasta, a path to a fasta format file. Defaults to None.
+    """
+
+    logging.debug(args)
+
+    for seq in SeqIO.parse(args.fasta, "fasta"):
+        seq.letter_annotations["solexa_quality"] = [40] * len(seq)
+        print(seq.format("fastq"), end='')
+
+
 def __create_windows_gtfs(args=None) -> None:
     """Entry point to merge gtf regions and write a merged gtf file. 
     Expected arguments are input(list of gtf paths),output_prefix(str) and 
@@ -206,7 +255,7 @@ def __create_windows_gtfs(args=None) -> None:
                               f'exists set overwrite to True if you wish '
                               'to overwrite')
 
-    clustered_regions = create_comparison_windows(args.input)
+    clustered_regions = create_comparison_windows(args.input, args.feature)
 
     # write out as a bed6 format file
     clustered_regions.to_gtf(output_filename)
@@ -239,7 +288,7 @@ def __find_unique_isoforms(args=None) -> None:
         if args.output_prefix \
         else 'unique_isoforms.csv'
     logging.debug(output_filename)
-    
+
     if os.path.exists(output_filename) and not args.overwrite:
         raise FileExistsError(f'file with name {output_filename} already '
                               f'exists set overwrite to True if you wish '

@@ -64,18 +64,17 @@ def test_align_isoforms(clustered_gtf, fasta_dict):
 def test_compare_isoforms_in_cluster(clustered_gtf, fasta_dict):
     il = Compare.IsoformLibrary(clustered_gtf, fasta_dict)
 
-    cluster_window = il.get_cluster_coord(str(1))
     cluster_compare = Compare.compare_isoforms_in_cluster(il, str(1))
 
     # this should be the same length as the crossed vectors, which is the
     # number of tx in the window choose 2. the cluster_window.score attr
     # stores the number of tx in the window
-    assert math.comb(cluster_window.score, 2) == len(cluster_compare)
+    assert math.comb(len(il.get_cluster(str(1))), 2) == len(cluster_compare)
 
 
 def test_filter_comparisons(clustered_gtf, fasta_dict):
 
-    # note that this code is the same as in find_unique_isoforms, but 
+    # note that this code is the same as in find_unique_isoforms, but
     # is repeated here to get all_comparisons for the asserts below
 
     il = Compare.IsoformLibrary(clustered_gtf, fasta_dict)
