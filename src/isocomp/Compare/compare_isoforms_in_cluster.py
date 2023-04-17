@@ -1,9 +1,9 @@
 import logging
 
+from isocomp.Coordinates import Window
 from .vector_crosser import vector_crosser
 from .align_isoforms import align_isoforms
 from .IsoformLibrary import IsoformLibrary
-from isocomp.Coordinates import Window
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -16,10 +16,10 @@ def __output_dict(cluster_id: str,
                   isoform2_window: Window = None,
                   aln: dict = None) -> dict:
     """
-    Create a dictionary containing the information regarding unique isoforms. 
-    If in a given cluster there are sequence comparisons, then the output 
-    attributes for both isoform1 and isoform2 will be not empty strings, and 
-    there will be alignment info. Otherwise, there will be only isoform1 
+    Create a dictionary containing the information regarding unique isoforms.
+    If in a given cluster there are sequence comparisons, then the output
+    attributes for both isoform1 and isoform2 will be not empty strings, and
+    there will be alignment info. Otherwise, there will be only isoform1
     details.
 
     Args:
@@ -35,8 +35,8 @@ def __output_dict(cluster_id: str,
             'cigar' (str) keys.
 
     Returns:
-        dict: A dictionary containing detailed information about the 
-            comparison of the two isoforms, including the cluster ID, 
+        dict: A dictionary containing detailed information about the
+            comparison of the two isoforms, including the cluster ID,
             chromosome, information about each isoform, and alignment details.
     """
     cluster_id = str(cluster_id)
@@ -67,10 +67,6 @@ def __output_dict(cluster_id: str,
                 raise AttributeError(f'isoform2_window must be a Window '
                                      f'object with the following attributes: '
                                      f'{window_attr}') from exc
-        else:
-            compare_dict.update({
-                'isoform2_'+window_attr: ""
-            })
 
     if aln:
         compare_dict.update({
