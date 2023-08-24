@@ -1,0 +1,4 @@
+source,fasta
+hg002_sqanti_fltr,/home/oguzkhan/code/isocomp/src/tests/data/hg002_sqanti_fltr.fasta
+hg004_sqanti_fltr,/home/oguzkhan/code/isocomp/src/tests/data/hg004_sqanti_fltr.fasta
+hg005_sqanti_fltr,/home/oguzkhan/code/isocomp/src/tests/data/hg005_sqanti_fltr.fasta
