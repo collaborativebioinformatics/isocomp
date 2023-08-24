@@ -1,7 +1,8 @@
 import operator
 import logging
+from itertools import product
 
-from .IsoformLibrary import IsoformLibrary
+import numpy as np
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -63,5 +64,91 @@ def vector_crosser(v1: list, v2: list, equals: bool = False) -> dict:
     # see the docstring for inner() above
     for i in range(len(unique_v1)):
         inner(i)
+
+    return d
+
+
+# TODO check the two functions below for equivalent functionality. If 
+# they are the same, then replace the old implementation with one of the 
+# new ones -- preferrably the stdlib unless there is a compelling reason not 
+# to. Consider returning a list of tuples instead of the dict.
+
+# this needs to be checked...if it achieves the same thing, then replace
+# the old implementation. Returning the combinations (list of tuples),
+# rather than the dict, is also better
+def __vector_crosser_stdlib(v1: list, v2: list, equals: bool = False) -> dict:
+    """
+    Given two lists with any length and any element type, generate a
+    dictionary with keys 'V1' and 'V2', each of which stores a list.
+    Indices of the list correspond to one another which describe all
+    unique combinations of the elements of v1 and v2.
+    Set equals to TRUE to return corresponding elements with equal values,
+    e.g., 1 == 1. This is based on R code here:
+    https://github.com/mhesselbarth/suppoRt/blob/HEAD/R/expand_grid_unique.R
+
+    Args:
+        v1 (list): a list of items
+        v2 (list): a list of items
+        equals (bool, optional): whether to return paired elements where
+        the values of v1 and v2 are the same, e.g., '1' '1' would be in the 
+        same index in V1 and V2 if this is set to True. Defaults to False.
+
+    Returns:
+        dict: a dictionary with keys 'V1' and 'V2', each of which stores a
+        list. Indices of the list correspond to one another which describe
+        all unique combinations of the elements of v1 and v2
+    """
+    unique_v1 = list(set(v1))
+    unique_v2 = list(set(v2))
+
+    if equals:
+        combinations = list(product(unique_v1, unique_v2))
+    else:
+        combinations = [(a, b) for a in unique_v1 for b in unique_v2 if a != b]
+
+    d = {
+        "V1": [x[0] for x in combinations],
+        "V2": [x[1] for x in combinations]
+    }
+
+    return d
+
+
+def __vector_crosser_numpy(v1: list, v2: list, equals: bool = False) -> dict:
+    """
+    Given two lists with any length and any element type, generate a
+    dictionary with keys 'V1' and 'V2', each of which stores a list.
+    Indices of the list correspond to one another which describe all
+    unique combinations of the elements of v1 and v2.
+    Set equals to TRUE to return corresponding elements with equal values,
+    e.g., 1 == 1. This is based on R code here:
+    https://github.com/mhesselbarth/suppoRt/blob/HEAD/R/expand_grid_unique.R
+
+    Args:
+        v1 (list): a list of items
+        v2 (list): a list of items
+        equals (bool, optional): whether to return paired elements where
+        the values of v1 and v2 are the same, e.g., '1' '1' would be in the same
+        index in V1 and V2 if this is set to True. Defaults to False.
+
+    Returns:
+        dict: a dictionary with keys 'V1' and 'V2', each of which stores a
+        list. Indices of the list correspond to one another which describe
+        all unique combinations of the elements of v1 and v2
+    """
+    unique_v1 = np.array(list(set(v1)))
+    unique_v2 = np.array(list(set(v2)))
+
+    v1_grid, v2_grid = np.meshgrid(unique_v1, unique_v2, indexing='ij')
+    combinations = np.column_stack((v1_grid.ravel(), v2_grid.ravel()))
+
+    if not equals:
+        mask = combinations[:, 0] != combinations[:, 1]
+        combinations = combinations[mask]
+
+    d = {
+        "V1": list(combinations[:, 0]),
+        "V2": list(combinations[:, 1])
+    }
 
     return d

@@ -1,0 +1,12 @@
+../.venv
+../.vscode
+../build
+../dist
+../site
+../temp
+../.pytest_cache
+
+../.git/
+**/__pycache__/
+*.py[cod]
+*$py.class
