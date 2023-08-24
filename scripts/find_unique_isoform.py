@@ -8,6 +8,7 @@ import pysam
 import edlib
 import numpy
 import logging
+import logging
 from Bio import SeqIO
 
 logging.basicConfig(
