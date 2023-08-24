@@ -1,25 +1,19 @@
-
 #!/usr/bin/env python3
 
 """
 For some background information:
     Step 0)
-
     With three input FASTAs (e.g. HG002, HG004, HG005), for each fasta file:
-
     (0B) Make sure FASTA seq IDs are both unique and have the
     sample name. Proposal: "SampleName_i_existingFastaSeqID"
     whereby i is the increment. <- This script takes care of this part
     of step 0.
-
     (0C) Align these three FASTAs to the T2T reference, and
     create a BAM file.
-
 Brief description:
     The script takes one FASTA file, rename the sequence
     names to "SampleName_i_existingFastaSeqID" and print the output to
     an output FASTA file (default = <sample>.renamed.fasta, if not specified)
-
 usage:
     step0_rename_fasta_desc.py -i input.fasta -o output.fasta -s sample1
     step0_rename_fasta_desc.py -i input.fasta -s sample1
@@ -38,7 +32,6 @@ __all__ = ['rename_fa_desc','main']
 def rename_fa_desc(input_fa: str, output_fa: str, sample: str, i: int = 1) -> None:
     """rename FASTA description to: ">SampleName_i_existingFastaSeqID"
     whereby i is the increment, and print the renamed FASTA entries
-
     Args:
         input_fa (str): _description_
         output_fa (str): _description_
