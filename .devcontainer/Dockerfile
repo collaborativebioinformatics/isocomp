@@ -1,40 +1,16 @@
-FROM mcr.microsoft.com/devcontainers/base:jammy
+FROM python:3.9
 
-ARG DEBIAN_FRONTEND=noninteractive
-ARG USER=vscode
+# Set environment variables to non-interactive (this prevents some prompts)
+ENV DEBIAN_FRONTEND=non-interactive
+ENV PYTHONUNBUFFERED=true
 
-RUN DEBIAN_FRONTEND=noninteractive \
-    && apt-get update \ 
-    && apt-get install -y build-essential --no-install-recommends make \
-        ca-certificates \
-        git \
-        libssl-dev \
-        zlib1g-dev \
-        libbz2-dev \
-        libreadline-dev \
-        libsqlite3-dev \
-        wget \
-        curl \
-        llvm \
-        libncurses5-dev \
-        xz-utils \
-        tk-dev \
-        libxml2-dev \
-        libxmlsec1-dev \
-        libffi-dev \
-        liblzma-dev
+RUN apt-get update && \
+    apt-get install -y build-essential libffi-dev && \
+	apt-get remove && \
+	apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# symlink python3 to python
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN pip install --upgrade pip
+RUN pip install poetry
 
-USER $USER
-ARG HOME="/home/$USER"
-
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
-# Add Poetry to the PATH
-ENV PATH="$HOME/.local/bin:$PATH"
-
-# Set the poetry config for virtual environments
 RUN poetry config virtualenvs.in-project true
