@@ -33,6 +33,7 @@ def align_isoforms(isoform1: str, isoform2: str) -> dict:
 
     # TODO figure out this 'normalization' -- should it be the longest
     # iso in the cluster? longest between iso1 and iso2? Does it matter?
+    # hi -- i am in the new_feature branch
     out = {'normalized_edit_dist':
            round(aln['editDistance'] / len(isoform1), 2),
            'cigar': aln['cigar']}
