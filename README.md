@@ -1,8 +1,10 @@
 # Isocomp: comparing high-quality IsoSeq3 isoforms between samples
 
-<div style="text-align:center;">
-    <img src=https://imgur.com/a/q9UFFTO alt="Isocomp" width="300" height="200">
-</div>
+<p align="center">
+  <img width="300" height="200" src="https://imgur.com/a/q9UFFTO">
+</p>
+
+![ISOCOMP](https://imgur.com/a/q9UFFTO)
 
 ## Contributors
 1. Yutong Qiu (Carnegie Mellon)
