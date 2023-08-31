@@ -1,7 +1,7 @@
 # Isocomp: comparing high-quality IsoSeq3 isoforms between samples
 
 <div style="text-align:center;">
-    <img src="https://imgur.com/a/q9UFFTO" alt="Isocomp" width="300" height="200">
+    <img src=https://imgur.com/a/q9UFFTO alt="Isocomp" width="300" height="200">
 </div>
 
 ## Contributors
