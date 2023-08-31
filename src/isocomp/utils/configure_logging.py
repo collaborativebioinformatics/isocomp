@@ -27,18 +27,15 @@ def configure_logging(level=logging.INFO,
     >>> configure_logging(level=logging.DEBUG)
     >>> configure_logging(level=logging.INFO)
     """
-    if level not in [logging.DEBUG,
-                     logging.INFO,
-                     logging.WARNING,
-                     logging.ERROR,
-                     logging.CRITICAL]:
-        raise ValueError("The logging level must be one of logging.DEBUG, "
-                         "logging.INFO, logging.WARNING, logging.ERROR, "
-                         "or logging.CRITICAL.")
-    
+    log_level = level.upper()
+    if log_level not in ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']:
+        raise ValueError("The logging level must be one of debug, "
+                         "info, warning, error, "
+                         "or critical.")
+
     if not isinstance(to_file, bool):
         raise ValueError("to_file must be a boolean.")
-    
+
     if to_file:
         if not filename:
             raise ValueError("filename must be provided when to_file is True.")
@@ -69,7 +66,7 @@ def configure_logging(level=logging.INFO,
         'handlers': handlers,
         'root': {
             'handlers': list(handlers.keys()),
-            'level': level,
+            'level': log_level,
         },
     }
 
