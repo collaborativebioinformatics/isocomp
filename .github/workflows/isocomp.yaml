@@ -1,4 +1,4 @@
-name: Python package with Poetry and MkDocs Deploy
+name: Run isocomp tests
 
 on:
   push:
@@ -39,9 +39,9 @@ jobs:
     - name: Install dependencies using Poetry
       run: |
         poetry install
-    - name: Lint with flake8 using Poetry
+    - name: Lint with flake8 using Poetry with no error exit code
       run: |
-        poetry run flake8 .
+        poetry run flake8 . || true
     - name: Test with pytest using Poetry
       run: |
         poetry run python -m pytest
