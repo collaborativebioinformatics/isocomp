@@ -5,7 +5,7 @@ from .vector_crosser import vector_crosser
 from .align_isoforms import align_isoforms
 from .IsoformLibrary import IsoformLibrary
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['compare_isoforms_in_cluster']
 
@@ -126,7 +126,8 @@ def compare_isoforms_in_cluster(
     # same strand, overlap threshold, different subjects
     else:
         # group transcripts by coordinates; return unique
-        cluster_gtf_grouped = cluster_gtf.df.groupby(by=['Start', 'End', 'Strand'], as_index=True)
+        cluster_gtf_grouped = cluster_gtf.df\
+            .groupby(by=['Start', 'End', 'Strand'], as_index=True)
 
         for group, cluster_gtf_unique in cluster_gtf_grouped:
             if len(cluster_gtf_unique) > 1:        

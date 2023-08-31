@@ -2,7 +2,7 @@ import logging
 
 import pandas as pd
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['filter_comparisons']
 

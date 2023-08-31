@@ -7,4 +7,4 @@ from .conftest import *
 
 
 def test_version():
-    assert version('isocomp') == '0.1.0'
+    assert version('isocomp') == '0.2.0'

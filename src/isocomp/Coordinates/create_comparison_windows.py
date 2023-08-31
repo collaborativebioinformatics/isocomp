@@ -8,7 +8,7 @@ import pyranges as pr
 
 from .update_source import update_source
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['create_comparison_windows']
 
@@ -39,7 +39,7 @@ def create_comparison_windows(gtf_list: list,
         transcript_id, gene_id, Cluster
     """
     # check input
-    logging.debug(gtf_list)
+    logger.debug(gtf_list)
     if not isinstance(gtf_list, list):
         raise IOError('pyranges_list must be type list')
     for path in gtf_list:
@@ -67,7 +67,7 @@ def create_comparison_windows(gtf_list: list,
     concat_ranges = concat_ranges[concat_ranges.Feature == feature]
     clustered_ranges = concat_ranges.cluster(**kwargs)
 
-    logging.debug('number of merged ranges: %s',
+    logger.debug('number of merged ranges: %s',
                   str(max(clustered_ranges.Cluster)))
 
     return clustered_ranges

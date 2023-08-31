@@ -49,13 +49,13 @@ parser.add_argument('-q', '--'+optList[0], type=float, metavar='', default=95, h
 
 # strict positional/optional arguments checking
 argsDict = vars(parser.parse_args())
-logging.info('Parsing Input Arguements...')
-logging.info('Parsing Input Arguements...')
+logger.info('Parsing Input Arguements...')
+logger.info('Parsing Input Arguements...')
 for key, value in argsDict.items():
-    if key in posList: logging.info('Required Argument - %s: %s' %(key, value))
-    if key in optList: logging.info('Optional Argument - %s: %s' %(key, value))
-    if key in posList: logging.info('Required Argument - %s: %s' %(key, value))
-    if key in optList: logging.info('Optional Argument - %s: %s' %(key, value))
+    if key in posList: logger.info('Required Argument - %s: %s' %(key, value))
+    if key in optList: logger.info('Optional Argument - %s: %s' %(key, value))
+    if key in posList: logger.info('Required Argument - %s: %s' %(key, value))
+    if key in optList: logger.info('Optional Argument - %s: %s' %(key, value))
     vars()[key] = value # assign values of arguments into shorthand global variables
 
 
@@ -388,6 +388,6 @@ if __name__ == "__main__":
     compareFunc(seqDict, outPre, minPercent)
     compareFunc(seqDict, outPre, minPercent)
 
-logging.info('End of Program\n')
-logging.info('End of Program\n')
+logger.info('End of Program\n')
+logger.info('End of Program\n')
 

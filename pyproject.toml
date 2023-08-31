@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "isocomp"
-version = "0.1.0"
+version = "0.2.1"
 description = ""
 authors = ["Yutong Qiu <yutongq@andrew.cmu.edu>", "Chia Sin Liew <chiasin.liew@unl.edu>", "Rupesh Kesharwani <rupesh.kesharwani@bcm.edu>", 
            "Bida Gu <bidagu@usc.edu>", "chase mateusiak <chase.mateusiak@gmail.com>", 
@@ -30,6 +30,7 @@ isocomp = "isocomp:__main__.main"
 
 [tool.poetry.group.dev.dependencies]
 matplotlib = "^3.7.1"
+autopep8 = "^2.0.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
