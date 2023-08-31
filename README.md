@@ -11,6 +11,17 @@
 6. Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation)
 6. Evan	Biederstedt (HMS)
 
+## Github Codespace for Development
+
+To use codespaces for development purposes, do the following:
+
+1. fork the repo
+2. switch to the 'develop' branch
+    - **NOTE**: if you are planning to code/add a feature, create a branch from the 'develop' branch. Switch to it, and then continue on with the steps below.
+4. click the green 'code' button. **But**, rather than copying the https or ssh link, click the tab that says "Codespace"
+5. click the button that says "create codespace on develop". Go make some tea -- it takes ~5 minutes or so to set up the environment. But, once it is set up, you
+   will have a fully functioning vscode environment with all the dependencies installed. Start running the tests, set some breakpoints, take a look around!
+
 ## Detailed project overview
 https://github.com/collaborativebioinformatics/isocomp/blob/main/FinalPresentation_BCM_Hackathon_12Oct2022.pdf 
 
