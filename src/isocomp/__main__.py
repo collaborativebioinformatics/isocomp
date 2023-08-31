@@ -12,6 +12,7 @@ from Bio import SeqIO
 # local imports
 from .Coordinates import create_comparison_windows
 from .Compare import find_unique_isoforms
+from .utils.configure_logging import configure_logging
 
 logger = logging.getLogger(__name__)
 
@@ -328,34 +329,14 @@ def main(args=None) -> None:
     # help message
     try:
         log_level = args.log_level.upper()
+        if log_level not in ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']:
+            raise ValueError("The logging level must be one of debug, "
+                             "info, warning, error, "
+                             "or critical.")
     except AttributeError:
         sys.exit(arg_parser.print_help())
 
-    # set the logging details
-    log_config = {
-        "version": 1,
-        "root": {
-            "handlers": ["console"],
-            "level": f"{log_level}"
-        },
-        "handlers": {
-            "console": {
-                "formatter": "std_out",
-                "class": "logging.StreamHandler"
-            }
-        },
-        "formatters": {
-            "std_out": {
-                "format": "%(asctime)s : %(module)s : " +
-                "%(funcName)s : line: %(lineno)d\n" +
-                "\tprocess details : %(process)d, %(processName)s\n" +
-                "\tthread details : %(thread)d, %(threadName)s\n" +
-                "\t%(levelname)s : %(message)s",
-                "datefmt": "%Y-%m-%d %H:%M:%S"
-            }
-        }
-    }
-    dictConfig(log_config)
+    configure_logging(log_level)
     # log the cmd line arguments at the debug level
     logger.debug(sys.argv)
     logger.debug(str(args))
