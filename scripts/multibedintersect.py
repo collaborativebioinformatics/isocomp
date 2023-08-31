@@ -1,3 +1,11 @@
+"""
+copied form arq5x -- just put here for reference
+
+https://gist.github.com/arq5x/1326127#file-python-prototype-py
+
+Credit: https://gist.github.com/arq5x
+"""
+
 #!/usr/bin/env python
 
 from collections import namedtuple, defaultdict
