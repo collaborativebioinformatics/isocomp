@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "isocomp"
-version = "0.2.1"
+version = "0.2.2"
 description = ""
 authors = ["Yutong Qiu <yutongq@andrew.cmu.edu>", "Chia Sin Liew <chiasin.liew@unl.edu>", "Rupesh Kesharwani <rupesh.kesharwani@bcm.edu>", 
            "Bida Gu <bidagu@usc.edu>", "chase mateusiak <chase.mateusiak@gmail.com>", 
