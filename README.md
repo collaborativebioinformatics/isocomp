@@ -1,10 +1,6 @@
 # Isocomp: comparing high-quality IsoSeq3 isoforms between samples
 
-<p align="center">
-  <img width="300" height="200" src="https://imgur.com/a/q9UFFTO">
-</p>
-
-![ISOCOMP](https://imgur.com/a/q9UFFTO)
+![ISOCOMP](https://i.ibb.co/vHLhrZq/Isocomp-logo1.png)
 
 ## Contributors
 1. Yutong Qiu (Carnegie Mellon)
@@ -13,16 +9,18 @@
 4. Rupesh Kesharwani (Baylor College of Medicine)
 5. Bida	Gu (University of Southern California)
 6. Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation)
-6. Evan	Biederstedt (HMS)
-7. Umran Yaman (UK Dementia Research Institute, University College London)
-
+7. Evan	Biederstedt (HMS)
+8. Umran Yaman (UK Dementia Research Institute, University College London)
+9. Abdullah Al Nahid (Shahjalal University of Science and Technology)
+10. Trinh Tat (Houston Methodist Research Institute)
+    
 ## Github Codespace for Development
 
 To use codespaces for development purposes, do the following:
 
 1. fork the repo
 2. switch to the 'develop' branch
-    - **NOTE**: if you are planning to code/add a feature, create a branch from the 'develop' branch. Switch to it, and then continue on with the steps below.
+    - **NOTE**: if you plan to code/add a feature, create a branch from the 'develop' branch. Switch to it, and then continue on with the steps below.
 4. click the green 'code' button. **But**, rather than copying the https or ssh link, click the tab that says "Codespace"
 5. click the button that says "create codespace on develop". Go make some tea -- it takes ~5 minutes or so to set up the environment. But, once it is set up, you
    will have a fully functioning vscode environment with all the dependencies installed. Start running the tests, set some breakpoints, take a look around!
@@ -31,17 +29,17 @@ To use codespaces for development purposes, do the following:
 https://github.com/collaborativebioinformatics/isocomp/blob/main/FinalPresentation_BCM_Hackathon_12Oct2022.pdf 
 
 ## Introduction
-NGS-targeted sequencing and WES have become routine for the clinical diagnosis of Mendelian disease (Xue et al., 2015;  . Family sequencing (or "trio sequencing") involves sequencing a patient and parents (trio) or other relatives. This improves the diagnostic potential via the interpretation of germline mutations and enables the detection of de novo mutations which underlie most Mendelian disorders. 
+NGS-targeted sequencing and WES have become routine for diagnosing Mendelian disease (Xue et al., 2015). Family sequencing (or "trio sequencing") involves sequencing a patient and parents (trio) or other relatives. This improves the diagnostic potential via the interpretation of germline mutations and enables the detection of de novo mutations which underlie most Mendelian disorders. 
 
 While transcriptomic profiling has gained traction over the past few decades, its progress has been hindered by short-read sequencing, particularly in tasks such as inferring alternative splicing, allelic imbalance, and isoform variation.
 
-The potential of long-read sequencing lies in its ability to overcome the inherent limitations of short-reads. Tools like Isoseq3 [link: https://www.pacb.com/products-and-services/applications/rna-sequencing/] offer high-quality, polished and assembled full isoforms. This advancement allows us to identify alternatively spliced isoforms and detect gene fusions.
+The potential of long-read sequencing lies in its ability to overcome the inherent limitations of short-reads. Tools like Isoseq3 [link: https://www.pacb.com/products-and-services/applications/rna-sequencing/] offer high-quality, polished and assembled full-length isoforms. This advancement allows us to identify alternatively spliced isoforms and detect gene fusions.
 
 Provides high-quality, polished, assembled full isoforms. With this, we will be able to identify alternatively spliced isoforms and detect gene fusions. 
 
-With the introduction of HiFi reads error rates have significantly decreased.
+With the introduction of HiFi error rates have significantly decreased.
 
-The objective of this project is to expand the applicability of long-read RNAseq for investigating Mendelian diseases across multiple samples.
+This project aims to expand the applicability of long-read RNAseq for investigating Mendelian diseases across multiple samples.
 
 -And what about gene fusions? We detect these in the stupidest possible way with short-read sequencing, and we think they're cancer-specific. What about the germline?
 
