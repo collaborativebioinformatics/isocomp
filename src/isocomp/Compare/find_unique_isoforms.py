@@ -35,10 +35,8 @@ def find_unique_isoforms(clustered_gtf: str,
     for cluster in il.cluster_list:
         cluster = str(cluster)
         logger.debug(cluster)
-        # only compare if there are more than 1 isoforms in the window
-        if il.get_cluster_coord(cluster).score > 1:
-            all_comparisons\
-                .extend(compare_isoforms_in_cluster(il, cluster))
+        all_comparisons\
+            .extend(compare_isoforms_in_cluster(il, cluster))
     # filter the result of the comparisons
     #compare_df_fltr = filter_comparisons(all_comparisons)
 

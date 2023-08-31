@@ -324,18 +324,6 @@ def main(args=None) -> None:
 
     args = arg_parser.parse_args(args)
 
-    # this is a default setting -- if it is not set, it means
-    # that nothing was passed on the cmd line. Instead, print the
-    # help message
-    try:
-        log_level = args.log_level.upper()
-        if log_level not in ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']:
-            raise ValueError("The logging level must be one of debug, "
-                             "info, warning, error, "
-                             "or critical.")
-    except AttributeError:
-        sys.exit(arg_parser.print_help())
-
     configure_logging(log_level)
     # log the cmd line arguments at the debug level
     logger.debug(sys.argv)

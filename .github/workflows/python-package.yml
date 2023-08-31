@@ -1,24 +1,19 @@
-name: Python package with Poetry and MkDocs Deploy
+name: Python package with Poetry
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ "main" ]
 
 jobs:
   build:
+
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.9", "3.10", "3.11"]
-
-    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v2
@@ -48,27 +43,3 @@ jobs:
     - name: Test with pytest using Poetry
       run: |
         poetry run python -m pytest
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Install MkDocs
-      run: pip install mkdocs
-
-    - name: Build MkDocs documentation
-      run: mkdocs build
-
-    - name: Deploy to GitHub Pages
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        mkdocs gh-deploy --force
-
-    - name: Clean up
-      run: |
-        rm -rf site
