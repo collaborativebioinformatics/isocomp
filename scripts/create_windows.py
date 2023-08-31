@@ -21,7 +21,7 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['get_all_windows','further_merge','main']
 
@@ -192,11 +192,11 @@ def parse_args(args=None):
 
 def main(args=None):
 
-    logging.debug('cmd ling arguments: {args}')
+    logger.debug('cmd ling arguments: {args}')
     args = parse_args(args)
 
     # Check inputs
-    logging.info('checking input...')
+    logger.info('checking input...')
     input_path_list = [args.gene_window_name]
     for input_path in input_path_list:
         if not os.path.exists(input_path):

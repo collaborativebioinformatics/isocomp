@@ -4,7 +4,7 @@ import logging
 # ext dependencies
 import pyranges as pr
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['update_source']
 

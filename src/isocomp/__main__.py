@@ -13,7 +13,7 @@ from Bio import SeqIO
 from .Coordinates import create_comparison_windows
 from .Compare import find_unique_isoforms
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 
 def parse_args() -> Callable[[list], argparse.Namespace]:
@@ -222,7 +222,7 @@ def __fasta_to_fastq(args=None) -> None:
         fasta, a path to a fasta format file. Defaults to None.
     """
 
-    logging.debug(args)
+    logger.debug(args)
 
     for seq in SeqIO.parse(args.fasta, "fasta"):
         seq.letter_annotations["solexa_quality"] = [40] * len(seq)
@@ -242,13 +242,13 @@ def __create_windows_gtfs(args=None) -> None:
         FileExistsError: raised if the output path exists and overwrite is 
         False
     """
-    logging.debug(args)
+    logger.debug(args)
 
     # TODO consider stripping extension, if one is passed, from output_prefix
     output_filename = args.output_prefix+'.gtf' \
         if args.output_prefix \
         else 'clustered_regions.gtf'
-    logging.debug(output_filename)
+    logger.debug(output_filename)
 
     if os.path.exists(output_filename) and not args.overwrite:
         raise FileExistsError(f'file with name {output_filename} already '
@@ -277,7 +277,7 @@ def __find_unique_isoforms(args=None) -> None:
         column names
     """
 
-    logging.debug(args)
+    logger.debug(args)
 
     for path in [args.clustered_gtf, args.fasta_map]:
         if not os.path.exists(path):
@@ -287,7 +287,7 @@ def __find_unique_isoforms(args=None) -> None:
     output_filename = args.output_prefix+'.csv' \
         if args.output_prefix \
         else 'unique_isoforms.csv'
-    logging.debug(output_filename)
+    logger.debug(output_filename)
 
     if os.path.exists(output_filename) and not args.overwrite:
         raise FileExistsError(f'file with name {output_filename} already '
@@ -357,8 +357,8 @@ def main(args=None) -> None:
     }
     dictConfig(log_config)
     # log the cmd line arguments at the debug level
-    logging.debug(sys.argv)
-    logging.debug(str(args))
+    logger.debug(sys.argv)
+    logger.debug(str(args))
 
     # note that this works b/c the subparser set_defaults function attribute
     # is set.

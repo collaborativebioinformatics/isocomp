@@ -4,7 +4,7 @@ from itertools import product
 
 import numpy as np
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['vector_crosser']
 

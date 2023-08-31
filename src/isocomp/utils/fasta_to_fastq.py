@@ -3,7 +3,7 @@ import logging
 # external dependencies
 from Bio import SeqIO
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['fasta_to_fastq']
 
@@ -16,7 +16,7 @@ def fasta_to_fastq(fasta_file: str) -> None:
         fasta_file (str): path to a fasta file
     """
 
-    logging.debug(fasta_file)
+    logger.debug(fasta_file)
 
     for seq in SeqIO.parse(fasta_file, "fasta"):
         seq.letter_annotations["solexa_quality"] = [40] * len(seq)
