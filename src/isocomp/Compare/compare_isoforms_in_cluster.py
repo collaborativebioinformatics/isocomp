@@ -108,6 +108,9 @@ def compare_isoforms_in_cluster(
     # TODO consider doing this as a view of the isoform_library
     cluster_gtf = isoform_library.get_cluster(cluster)
 
+    # drop duplicated transcripts
+    cluster_gtf = cluster_gtf.drop_duplicate_positions() 
+
     # note that the score attribute stores the number of isoforms in
     # the window
     cluster_window = isoform_library.get_cluster_coord(cluster)
@@ -145,7 +148,7 @@ def compare_isoforms_in_cluster(
             isoform1_id = cross_isoforms['V1'][i]
             isoform2_id = cross_isoforms['V2'][i]
 
-            # create window ojects which describe the location of the isoforms
+            # create window objects which describe the location of the isoforms
             # according to the gtf
             isoform1_window = isoform_library\
                 .get_isoform_coord(unique_id=isoform1_id)
