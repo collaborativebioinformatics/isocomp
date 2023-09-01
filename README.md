@@ -4,44 +4,72 @@
 
 ![ISOCOMP](https://i.ibb.co/vHLhrZq/Isocomp-logo1.png)
 
-## Contributors
-1. Yutong Qiu (Carnegie Mellon)
-2. Chia Sin	Liew (University of Nebraska-Lincoln)
-3. Chase Mateusiak (Washington University)
-4. Rupesh Kesharwani (Baylor College of Medicine)
-5. Bida	Gu (University of Southern California)
-6. Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation)
-7. Evan	Biederstedt (HMS)
-8. Umran Yaman (UK Dementia Research Institute, University College London)
-9. Abdullah Al Nahid (Shahjalal University of Science and Technology)
-10. Trinh Tat (Houston Methodist Research Institute)
-11. Sejal Modha (Theolytics Limited)
-12. Jędrzej Kubica (University of Warsaw)
-    
-## Github Codespace for Development
-
-To use codespaces for development purposes, do the following:
-
-1. fork the repo
-2. switch to the 'develop' branch
-    - **NOTE**: if you plan to code/add a feature, create a branch from the 'develop' branch. Switch to it, and then continue on with the steps below.
-4. click the green 'code' button. **But**, rather than copying the https or ssh link, click the tab that says "Codespace"
-5. click the button that says "create codespace on develop". Go make some tea -- it takes ~5 minutes or so to set up the environment. But, once it is set up, you
-   will have a fully functioning vscode environment with all the dependencies installed. Start running the tests, set some breakpoints, take a look around!
-
-## Detailed project overview
-https://github.com/collaborativebioinformatics/isocomp/blob/main/FinalPresentation_BCM_Hackathon_12Oct2022.pdf 
+## Contributors:
+- Yutong Qiu (Carnegie Mellon)
+- Chia Sin	Liew (University of Nebraska-Lincoln)
+- Chase Mateusiak (Washington University)
+- Rupesh Kesharwani (Baylor College of Medicine)
+- Bida	Gu (University of Southern California)
+- Muhammad Sohail Raza (Beijing Institute of Genomics, Chinese Academy of Sciences/China National Center for Bioinformation)
+- Evan	Biederstedt (HMS)
+- Umran Yaman (UK Dementia Research Institute, University College London)
+- Abdullah Al Nahid (Shahjalal University of Science and Technology)
+- Trinh Tat (Houston Methodist Research Institute)
+- Sejal Modha (Theolytics Limited)
+- Jędrzej Kubica (University of Warsaw)
 
 ## Introduction
 Transcriptomic profiling has gained traction over the past few decades, but its progress has been hindered by short-read sequencing, particularly in tasks such as inferring alternative splicing, allelic imbalance, and isoform variation due to read length and required assembly.
 
 The potential of long-read sequencing lies in its ability to overcome the inherent limitations of short-reads. Tools like Isoseq3 [link: https://www.pacb.com/products-and-services/applications/rna-sequencing/] offer high-quality, polished, assembled full-length isoforms. This advancement allows us to identify alternatively spliced isoforms and detect gene fusions. Further, with the introduction of HiFi sequencing, the error rates have significantly decreased in third-generation sequencing long reads.
 
-In this project, we aim to expand the applicability of long-read RNAseq for investigating Mendelian disorders across multiple samples.
+## Aim
 
-## Goals
+The aim of this project is to algorithmically characterize the "unique" (differing) isoforms between any number of samples using high-quality assembled isoforms.
 
-The goal of this project is to algorithmically characterize the "unique" (differing) isoforms between any number of samples using high-quality assembled isoforms.
+## Workflow
+![](docs/images/isocomp_workflow.png)
+
+## Running the pipeline
+
+### Installation
+
+`pip install isocomp==0.3.0`
+
+For guidelines run:
+
+`isocomp --help`
+
+### Step 1. Create windows
+
+`isocomp create_windows -i sample1.gtf sample2.gtf sample3.gtf -f transcript -o clustered_file.gtf`
+
+### Step 2. Find unique isoforms across multiple samples
+
+`isocomp find_unique_isoforms -a clustered_file.gtf -f fasta_map.csv`
+
+File fasta_map.csv:
+
+```
+source,fasta
+NA24385.filtered,BCM-data-HG002-All2Samples-hg38-Results/NA24385_HG002/MMSQANTI3Filter/NA24385.filtered.fasta
+NA26105.filtered,BCM-data-HG002-All2Samples-hg38-Results/NA26105_GM26105/MMSQANTI3Filter/NA26105.filtered.fasta
+```
+
+### Example output
+
+For each isoform that is unique to at least one sample, we provide information about the read and the similarity between that isoform and the most similar isoform within the same window.
+
+The last column describes the normalized edit distance and the CIGAR string.
+
+```
+win_chr win_start       win_end total_isoform   isoform_name    sample_from     sample_compared_to      mapped_start    isoform_sequence        selected_alignments
+NC_060925.1     255178  288416  4       PB.6.2  HG004   HG002   255173  GGATTATCCGGAGCCAAGGTCCGCTCGGGTGAGTGCCCTCCGCTTTTT      0.02_HG002_PB.6.2_3=6I1=3I1286=11I
+NC_060925.1     255178  288416  4       PB.6.2  HG004   HG005   255173  GGATTATCCGGAGCCAAGGTCCGCTCGGGTGAGTGCCCTCCGCTTTTTG      0.02_HG002_PB.6.2_3=6I1=3I1286=11
+```
+
+## Detailed project overview
+https://github.com/collaborativebioinformatics/isocomp/blob/main/FinalPresentation_BCM_Hackathon_12Oct2022.pdf 
 
 ## Methods
 
@@ -87,30 +115,6 @@ Isoseq3 (v3.2.2) generated HQ (Full-length high quality) transcripts [Table 1] w
 
 Differences between isoforms are categorized into [TODO] SNPs (<5bp), large-scale variants (>5bp), gene fusion, different exon usage, and completely novel sequences. These categories build upon those used by SQANTI to annotate disparities between sample isoforms and the reference transcriptome. Note that we extend the categories provided by SQANTI by adding SNPs and large-scale variants.
 
-## Description
-
-## Flowchart
-![](images/workflow.png)
-### To extract sets of unique isoforms
-![](images/workflow_part1.png)
-### To annotate the unique isoforms
-![](images/workflow_part2.png)
-
-## Example Output
-
-For each isoform that is unique to at least one sample, we provide information about the read and the similarity between that isoform and the most similar isoform within the same window.
-
-The last column describes the normalized edit distance and the CIGAR string.
-
-```
-win_chr win_start       win_end total_isoform   isoform_name    sample_from     sample_compared_to      mapped_start    isoform_sequence        selected_alignments
-NC_060925.1     255178  288416  4       PB.6.2  HG004   HG002   255173  GGATTATCCGGAGCCAAGGTCCGCTCGGGTGAGTGCCCTCCGCTTTTT      0.02_HG002_PB.6.2_3=6I1=3I1286=11I
-NC_060925.1     255178  288416  4       PB.6.2  HG004   HG005   255173  GGATTATCCGGAGCCAAGGTCCGCTCGGGTGAGTGCCCTCCGCTTTTTG      0.02_HG002_PB.6.2_3=6I1=3I1286=11
-```
-
-### Deployment
-
-Eventually, `pip install isocomp`.  But not yet.
 
 ## DEPENDENCIES
 
@@ -178,6 +182,17 @@ pip install poetry
 # and continue with the development install below
 
 ```
+## Github Codespace for Development
+
+To use codespaces for development purposes, do the following:
+
+1. fork the repo
+2. switch to the 'develop' branch
+    - **NOTE**: if you plan to code/add a feature, create a branch from the 'develop' branch. Switch to it, and then continue on with the steps below.
+4. click the green 'code' button. **But**, rather than copying the https or ssh link, click the tab that says "Codespace"
+5. click the button that says "create codespace on develop". Go make some tea -- it takes ~5 minutes or so to set up the environment. But, once it is set up, you
+   will have a fully functioning vscode environment with all the dependencies installed. Start running the tests, set some breakpoints, take a look around!
+   
 ### Development
 
 Install [poetry](https://python-poetry.org/) and consider setting [the configuration 
