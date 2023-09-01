@@ -42,7 +42,6 @@ nav:
         - IsoformLibrary: api/compare/classes/IsoformLibrary.md
       - Functions:
         - align_isoforms: api/compare/functions/align_isoforms.md
-        - vector_crosser: api/compare/functions/vector_crosser.md
         - compare_isoforms_in_cluster: api/compare/functions/compare_isoforms_in_cluster.md
         - filter_comparisons: api/compare/functions/filter_comparisons.md
         - find_unique_isoforms: api/compare/functions/find_unique_isoforms.md

@@ -9,7 +9,7 @@ import pysam
 # local imports
 from isocomp.Coordinates import Window
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['IsoformLibrary']
 
@@ -58,7 +58,7 @@ class IsoformLibrary():
 
     @clustered_gtf_path.setter
     def clustered_gtf_path(self, new_path: str) -> None:
-        logging.debug('trying to set new clustered_gtf_path: {new_path}')
+        logger.debug('trying to set new clustered_gtf_path: {new_path}')
         if not os.path.exists(new_path):
             raise FileNotFoundError(f'{new_path} does not exist')
         # TODO allow gff and check format, not extension
@@ -128,7 +128,7 @@ class IsoformLibrary():
             index file does not exist
         """
 
-        logging.debug("new dict: %s", new_fasta_dict)
+        logger.debug("new dict: %s", new_fasta_dict)
 
         # check type
         if not isinstance(new_fasta_dict, dict):

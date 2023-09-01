@@ -1,11 +1,10 @@
 import logging
-
+from itertools import combinations
 from isocomp.Coordinates import Window
-from .vector_crosser import vector_crosser
 from .align_isoforms import align_isoforms
 from .IsoformLibrary import IsoformLibrary
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['compare_isoforms_in_cluster']
 
@@ -115,53 +114,55 @@ def compare_isoforms_in_cluster(
     # if there is only one individual in the cluster, then report all
     # isoforms in that cluster as unique
     if cluster_window.score < 2:
-        for tx_id in cluster_gtf.transcript_id:
-            isoform1_window = isoform_library.get_isoform_coord(tx_id)
+        for tx_id in cluster_gtf.unique_id:
+            isoform1_window = isoform_library\
+                .get_isoform_coord(unique_id=tx_id)
             out.append(__output_dict(cluster,
                                      cluster_window.chr,
                                      isoform1_window))
     # else there are mutiple subjects -- do an all by all comparison of the
     # isoforms in the cluster
-    # TODO parameterize the cases in which isoforms are compared --eg, 
+    # TODO parameterize the cases in which isoforms are compared --eg,
     # same strand, overlap threshold, different subjects
     else:
-        # this produces a cartesian product of sorts... looks something
-        # like this:
-        # vector_crosser(['tx_1','tx_2','tx_3'],['tx_1','tx_2','tx_3'])
-        # {'V1': ['tx_2', 'tx_2', 'tx_1'], 'V2': ['tx_1', 'tx_3', 'tx_3']}
-        # the V1 and V2 lists will be the same length, so if you iterate over
-        # the length of either list and compare the elements at the same index,
+        # group transcripts by coordinates; return unique
+        cluster_gtf_grouped = cluster_gtf.df\
+            .groupby(by=['Start', 'End', 'Strand'], as_index=True)
 
-        cross_isoforms = vector_crosser(
-            cluster_gtf.unique_id,
-            cluster_gtf.unique_id)
+        for group, cluster_gtf_unique in cluster_gtf_grouped:
+            if len(cluster_gtf_unique) > 1:
 
-        # iterate over the comparisons produced by vector_crosser() and
-        # conduct the sequence alignments
-        for i in range(len(cross_isoforms['V1'])):
+                # create pairwise combinations of the isoforms in the cluster
+                cross_isoforms = list(combinations(
+                    cluster_gtf_unique.unique_id, 2))
 
-            # get the unique_id corresponding to two comparisons in the
-            # cross_isoforms dict
-            isoform1_id = cross_isoforms['V1'][i]
-            isoform2_id = cross_isoforms['V2'][i]
+                for isoform_tuple in cross_isoforms:
 
-            # create window ojects which describe the location of the isoforms
-            # according to the gtf
-            isoform1_window = isoform_library\
-                .get_isoform_coord(unique_id=isoform1_id)
-            isoform2_window = isoform_library\
-                .get_isoform_coord(unique_id=isoform2_id)
+                    # create window objects which describe the location of
+                    # the isoforms according to the gtf
+                    isoform1_window = isoform_library\
+                        .get_isoform_coord(unique_id=isoform_tuple[0])
+                    isoform2_window = isoform_library\
+                        .get_isoform_coord(unique_id=isoform_tuple[1])
 
-            # compare the isoform sequences
-            aln = align_isoforms(
-                isoform_library.get_isoform_seq(unique_id=isoform1_id),
-                isoform_library.get_isoform_seq(unique_id=isoform2_id))
+                    # compare the isoform sequences
+                    aln = align_isoforms(
+                        isoform_library.get_isoform_seq(
+                            unique_id=isoform_tuple[0]),
+                        isoform_library.get_isoform_seq(
+                            unique_id=isoform_tuple[1]))
 
-            # append the compare_dict as an element to the list out
-            out.append(__output_dict(cluster,
-                                     cluster_window.chr,
-                                     isoform1_window,
-                                     isoform2_window,
-                                     aln))
-
+                    # append the compare_dict as an element to the list out
+                    out.append(__output_dict(cluster,
+                                             cluster_window.chr,
+                                             isoform1_window,
+                                             isoform2_window,
+                                             aln))
+            else:
+                tx_id = cluster_gtf_unique['unique_id'].iloc[0]
+                isoform1_window = isoform_library.get_isoform_coord(
+                    unique_id=tx_id)
+                out.append(__output_dict(cluster,
+                                         cluster_window.chr,
+                                         isoform1_window))
     return out

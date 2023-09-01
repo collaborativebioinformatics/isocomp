@@ -3,7 +3,7 @@ import logging
 # external dependencies
 import edlib
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['align_isoforms']
 

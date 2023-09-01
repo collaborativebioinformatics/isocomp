@@ -12,8 +12,9 @@ from Bio import SeqIO
 # local imports
 from .Coordinates import create_comparison_windows
 from .Compare import find_unique_isoforms
+from .utils.configure_logging import configure_logging
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 
 def parse_args() -> Callable[[list], argparse.Namespace]:
@@ -50,6 +51,14 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         choices=("critical", "error", "warning", "info", "debug"),
         default="warning")
 
+    common_args_group.add_argument(
+        "-c",
+        "--cpus",
+        type=int,
+        help="The number of cpus to use for parallel processing. Default is "
+        "the number of cpus on the system minus 1.",
+        default=None)
+
     # Create a top level parser -----------------------------------------------
     parser = argparse.ArgumentParser(
         prog='isocomp',
@@ -60,7 +69,7 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         "--version",
         action='version',
         version='%(prog)s '+f'{version("isocomp")}')
-    
+
     # create a subparser
     subparsers = parser.add_subparsers(
         help="Available Tools")
@@ -87,7 +96,7 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         required=True)
 
     # create_windows subparser ------------------------------------------------
-    
+
     create_windows_parser = subparsers.add_parser(
         'create_windows',
         help=script_descriptions['create_windows'],
@@ -222,7 +231,7 @@ def __fasta_to_fastq(args=None) -> None:
         fasta, a path to a fasta format file. Defaults to None.
     """
 
-    logging.debug(args)
+    logger.debug(args)
 
     for seq in SeqIO.parse(args.fasta, "fasta"):
         seq.letter_annotations["solexa_quality"] = [40] * len(seq)
@@ -242,13 +251,13 @@ def __create_windows_gtfs(args=None) -> None:
         FileExistsError: raised if the output path exists and overwrite is 
         False
     """
-    logging.debug(args)
+    logger.debug(args)
 
     # TODO consider stripping extension, if one is passed, from output_prefix
     output_filename = args.output_prefix+'.gtf' \
         if args.output_prefix \
         else 'clustered_regions.gtf'
-    logging.debug(output_filename)
+    logger.debug(output_filename)
 
     if os.path.exists(output_filename) and not args.overwrite:
         raise FileExistsError(f'file with name {output_filename} already '
@@ -277,7 +286,7 @@ def __find_unique_isoforms(args=None) -> None:
         column names
     """
 
-    logging.debug(args)
+    logger.debug(args)
 
     for path in [args.clustered_gtf, args.fasta_map]:
         if not os.path.exists(path):
@@ -287,7 +296,7 @@ def __find_unique_isoforms(args=None) -> None:
     output_filename = args.output_prefix+'.csv' \
         if args.output_prefix \
         else 'unique_isoforms.csv'
-    logging.debug(output_filename)
+    logger.debug(output_filename)
 
     if os.path.exists(output_filename) and not args.overwrite:
         raise FileExistsError(f'file with name {output_filename} already '
@@ -307,7 +316,9 @@ def __find_unique_isoforms(args=None) -> None:
     fasta_dict = dict(zip(fasta_df.source, fasta_df.fasta))
 
     # compare within each cluster and filter the results
-    comparison_fltr_df = find_unique_isoforms(args.clustered_gtf, fasta_dict)
+    comparison_fltr_df = find_unique_isoforms(args.clustered_gtf, 
+                                              fasta_dict,
+                                              args.cpus)
 
     # write out the results
     comparison_fltr_df.to_csv(output_filename, index=False)
@@ -323,42 +334,10 @@ def main(args=None) -> None:
 
     args = arg_parser.parse_args(args)
 
-    # this is a default setting -- if it is not set, it means
-    # that nothing was passed on the cmd line. Instead, print the
-    # help message
-    try:
-        log_level = args.log_level.upper()
-    except AttributeError:
-        sys.exit(arg_parser.print_help())
-
-    # set the logging details
-    log_config = {
-        "version": 1,
-        "root": {
-            "handlers": ["console"],
-            "level": f"{log_level}"
-        },
-        "handlers": {
-            "console": {
-                "formatter": "std_out",
-                "class": "logging.StreamHandler"
-            }
-        },
-        "formatters": {
-            "std_out": {
-                "format": "%(asctime)s : %(module)s : " +
-                "%(funcName)s : line: %(lineno)d\n" +
-                "\tprocess details : %(process)d, %(processName)s\n" +
-                "\tthread details : %(thread)d, %(threadName)s\n" +
-                "\t%(levelname)s : %(message)s",
-                "datefmt": "%Y-%m-%d %H:%M:%S"
-            }
-        }
-    }
-    dictConfig(log_config)
+    configure_logging(args.log_level)
     # log the cmd line arguments at the debug level
-    logging.debug(sys.argv)
-    logging.debug(str(args))
+    logger.debug(sys.argv)
+    logger.debug(str(args))
 
     # note that this works b/c the subparser set_defaults function attribute
     # is set.

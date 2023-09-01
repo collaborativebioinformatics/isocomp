@@ -24,7 +24,7 @@ import logging
 import sys
 import os
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 
 __all__ = ['rename_fa_desc','main']
@@ -76,11 +76,11 @@ def parse_args(args=None):
 
 def main(args=None):
     
-    logging.debug('cmd ling arguments: {args}')
+    logger.debug('cmd ling arguments: {args}')
     args = parse_args(args)
 
     # Check inputs
-    logging.info('checking input...')
+    logger.info('checking input...')
     input_path_list = [args.input]
     for input_path in input_path_list:
         if not os.path.exists(input_path):

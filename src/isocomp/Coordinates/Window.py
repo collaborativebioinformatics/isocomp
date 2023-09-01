@@ -2,7 +2,7 @@
 import logging
 import re
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logger = logging.getLogger(__name__)
 
 __all__ = ['Window']
 
@@ -48,7 +48,7 @@ class Window:
     @chr.setter
     def chr(self, new_chr: str):
         if not isinstance(new_chr, str):
-            logging.debug(new_chr)
+            logger.debug(new_chr)
             raise ValueError('chr must be a string')
         self._chr = new_chr
 
@@ -61,7 +61,7 @@ class Window:
     @start.setter
     def start(self, new_start: int):
         if not isinstance(new_start, int):
-            logging.debug(new_start)
+            logger.debug(new_start)
             raise ValueError('start must be an integer')
         self._start = new_start
 
@@ -74,7 +74,7 @@ class Window:
     @end.setter
     def end(self, new_end: int):
         if not isinstance(new_end, int):
-            logging.debug(new_end)
+            logger.debug(new_end)
             raise ValueError('end must be an integer')
         self._end = new_end
 
@@ -87,7 +87,7 @@ class Window:
     @strand.setter
     def strand(self, new_strand: str):
         if new_strand not in self._STRAND_VALUES:
-            logging.debug(new_strand)
+            logger.debug(new_strand)
             raise ValueError('strand value: %s is not one of the recognized '
                              'strand values: %s'
                              % (new_strand, ','.join(self._STRAND_VALUES)))
@@ -113,7 +113,7 @@ class Window:
     @score.setter
     def score(self, new_score: int):
 
-        logging.debug('new score: %s', new_score)
+        logger.debug('new score: %s', new_score)
 
         if not isinstance(new_score, int):
             raise ValueError('Score must be an integer')
