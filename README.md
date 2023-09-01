@@ -50,7 +50,7 @@ This project aims to expand the applicability of long-read RNAseq for investigat
 
 ## Goals
 
-The goal of this project is to algorithmically characterize the "unique" (differing) isoforms between 2-3 samples using high-quality assembled isoforms.
+The goal of this project is to algorithmically characterize the "unique" (differing) isoforms between any number of samples using high-quality assembled isoforms.
 
 ## Methods
 
