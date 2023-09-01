@@ -1,0 +1,32 @@
+# 0.3.0
+
+This is the result of the 2023 hackathon. Current features:
+
+1. The [Coordinate submodule](src/isocomp/Coordinates/) creates windows based 
+on overlapping transcripts in the concatenated set of input sequences
+2. The [Compare submodule](src/isocomp/Compare/) outputs unique transcripts 
+based on first whether they are individual transcripts in a given overlap 
+bin, next whether they have the exact same start/end points, and finally 
+those transcripts which do have the same start/end are pair-wise compared
+3. the command line tools function. On a 16 core machine on DNAnexus, runtime 
+is ~15 minutes with less than 7GB on 16 CPU
+
+## Caveats
+
+1. The output should be considered an intermediate result. It is unparsed and
+not immediately useful to anyone. However, there is good information there
+
+2. We are not conducting exon level coordinate matching on the transcripts. We 
+are therefore doing sequence comparison on transcripts which are not actually 
+the same (eg, transcripts form the same individual with different exon usage), 
+and we are not reporting the wealth of information that we could using the
+interval data alone.
+
+## Future directions
+
+1. The Coordinate submodule should create an interval tree structure from the
+input gtf files using exon coordinates. Exons should be labelled with the 
+transcript and gene IDs
+2. The interval tree can then be used to more finely compare intervals and
+label different TSS/TTS, exon usage, intron retention, etc
+3. The output format(s) must be refined
