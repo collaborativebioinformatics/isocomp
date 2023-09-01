@@ -54,15 +54,24 @@ def configure_logging(level=logging.INFO,
             'class': 'logging.FileHandler',
             'filename': filename,
             'mode': 'a',
+            'formatter': 'detailed',
         }
     else:
         handlers['console'] = {
             'class': 'logging.StreamHandler',
+            'formatter': 'detailed',
         }
 
     LOGGING_CONFIG = {
         'version': 1,
         'disable_existing_loggers': False,
+        'formatters': {
+            'detailed': {
+                'format': '%(asctime)s [%(process)d/%(thread)d] '
+                '[%(name)s] [%(levelname)s] - %(message)s',
+                'datefmt': '%Y-%m-%d %H:%M:%S'
+            },
+        },
         'handlers': handlers,
         'root': {
             'handlers': list(handlers.keys()),

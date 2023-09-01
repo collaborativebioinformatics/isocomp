@@ -51,6 +51,14 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         choices=("critical", "error", "warning", "info", "debug"),
         default="warning")
 
+    common_args_group.add_argument(
+        "-c",
+        "--cpus",
+        type=int,
+        help="The number of cpus to use for parallel processing. Default is "
+        "the number of cpus on the system minus 1.",
+        default=None)
+
     # Create a top level parser -----------------------------------------------
     parser = argparse.ArgumentParser(
         prog='isocomp',
@@ -61,7 +69,7 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         "--version",
         action='version',
         version='%(prog)s '+f'{version("isocomp")}')
-    
+
     # create a subparser
     subparsers = parser.add_subparsers(
         help="Available Tools")
@@ -88,7 +96,7 @@ def parse_args() -> Callable[[list], argparse.Namespace]:
         required=True)
 
     # create_windows subparser ------------------------------------------------
-    
+
     create_windows_parser = subparsers.add_parser(
         'create_windows',
         help=script_descriptions['create_windows'],
@@ -308,7 +316,9 @@ def __find_unique_isoforms(args=None) -> None:
     fasta_dict = dict(zip(fasta_df.source, fasta_df.fasta))
 
     # compare within each cluster and filter the results
-    comparison_fltr_df = find_unique_isoforms(args.clustered_gtf, fasta_dict)
+    comparison_fltr_df = find_unique_isoforms(args.clustered_gtf, 
+                                              fasta_dict,
+                                              args.cpus)
 
     # write out the results
     comparison_fltr_df.to_csv(output_filename, index=False)
@@ -324,19 +334,7 @@ def main(args=None) -> None:
 
     args = arg_parser.parse_args(args)
 
-    # this is a default setting -- if it is not set, it means
-    # that nothing was passed on the cmd line. Instead, print the
-    # help message
-    try:
-        log_level = args.log_level.upper()
-        if log_level not in ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']:
-            raise ValueError("The logging level must be one of debug, "
-                             "info, warning, error, "
-                             "or critical.")
-    except AttributeError:
-        sys.exit(arg_parser.print_help())
-
-    configure_logging(log_level)
+    configure_logging(args.log_level)
     # log the cmd line arguments at the debug level
     logger.debug(sys.argv)
     logger.debug(str(args))
