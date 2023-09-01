@@ -1,6 +1,6 @@
 [![Python package with Poetry](https://github.com/cmatKhan/isocomp/actions/workflows/python-package.yml/badge.svg)](https://github.com/cmatKhan/isocomp/actions/workflows/python-package.yml)
 
-# Isocomp: comparing high-quality IsoSeq3 isoforms between samples
+# Isocomp: Comparing isoform composition between cohorts using high-quality long-read RNA-seq
 
 ![ISOCOMP](https://i.ibb.co/vHLhrZq/Isocomp-logo1.png)
 
