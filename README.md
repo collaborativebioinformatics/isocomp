@@ -4,6 +4,14 @@
 
 ![ISOCOMP](https://i.ibb.co/vHLhrZq/Isocomp-logo1.png)
 
+## Table of contents
+1. [Contributors](#contributors)
+2. [Introduction](#introduction)
+3. [Aim](#aim)
+4. [Workflow](#workflow)
+5. [Running the pipeline](#running)
+6. [Methods](#methods)
+
 ## Contributors:
 - Yutong Qiu (Carnegie Mellon)
 - Chia Sin	Liew (University of Nebraska-Lincoln)
