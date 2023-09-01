@@ -33,20 +33,11 @@ To use codespaces for development purposes, do the following:
 https://github.com/collaborativebioinformatics/isocomp/blob/main/FinalPresentation_BCM_Hackathon_12Oct2022.pdf 
 
 ## Introduction
-NGS-targeted sequencing and WES have become routine for diagnosing Mendelian disease (Xue et al., 2015). Family sequencing (or "trio sequencing") involves sequencing a patient and parents (trio) or other relatives. This improves the diagnostic potential via the interpretation of germline mutations and enables the detection of de novo mutations which underlie most Mendelian disorders. 
+Transcriptomic profiling has gained traction over the past few decades, but its progress has been hindered by short-read sequencing, particularly in tasks such as inferring alternative splicing, allelic imbalance, and isoform variation due to read length and required assembly.
 
-While transcriptomic profiling has gained traction over the past few decades, its progress has been hindered by short-read sequencing, particularly in tasks such as inferring alternative splicing, allelic imbalance, and isoform variation.
+The potential of long-read sequencing lies in its ability to overcome the inherent limitations of short-reads. Tools like Isoseq3 [link: https://www.pacb.com/products-and-services/applications/rna-sequencing/] offer high-quality, polished, assembled full-length isoforms. This advancement allows us to identify alternatively spliced isoforms and detect gene fusions. Further, with the introduction of HiFi sequencing, the error rates have significantly decreased in third-generation sequencing long reads.
 
-The potential of long-read sequencing lies in its ability to overcome the inherent limitations of short-reads. Tools like Isoseq3 [link: https://www.pacb.com/products-and-services/applications/rna-sequencing/] offer high-quality, polished and assembled full-length isoforms. This advancement allows us to identify alternatively spliced isoforms and detect gene fusions.
-
-Provides high-quality, polished, assembled full isoforms. With this, we will be able to identify alternatively spliced isoforms and detect gene fusions. 
-
-With the introduction of HiFi error rates have significantly decreased.
-
-This project aims to expand the applicability of long-read RNAseq for investigating Mendelian diseases across multiple samples.
-
--And what about gene fusions? We detect these in the stupidest possible way with short-read sequencing, and we think they're cancer-specific. What about the germline?
-
+In this project, we aim to expand the applicability of long-read RNAseq for investigating Mendelian disorders across multiple samples.
 
 ## Goals
 
