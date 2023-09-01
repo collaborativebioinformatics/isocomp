@@ -16,6 +16,7 @@
 9. Abdullah Al Nahid (Shahjalal University of Science and Technology)
 10. Trinh Tat (Houston Methodist Research Institute)
 11. Sejal Modha (Theolytics Limited)
+12. Jędrzej Kubica (University of Warsaw)
     
 ## Github Codespace for Development
 
