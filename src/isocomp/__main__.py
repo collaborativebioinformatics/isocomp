@@ -334,6 +334,10 @@ def main(args=None) -> None:
 
     args = arg_parser.parse_args(args)
 
+    if "func" not in args:
+        arg_parser.print_help()
+        sys.exit(0)
+
     configure_logging(args.log_level)
     # log the cmd line arguments at the debug level
     logger.debug(sys.argv)
