@@ -324,7 +324,7 @@ def main(args=None) -> None:
 
     args = arg_parser.parse_args(args)
 
-    configure_logging(log_level)
+    configure_logging(args.log_level)
     # log the cmd line arguments at the debug level
     logger.debug(sys.argv)
     logger.debug(str(args))
